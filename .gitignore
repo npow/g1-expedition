@@ -1,0 +1,51 @@
+# This workspace contains several unrelated projects and multi-gigabyte local
+# training environments.  The Icefall G1 repository is deliberately curated.
+/*
+
+# Repository metadata and documentation.
+!/.gitignore
+!/.gitattributes
+!/README.md
+!/HANDOFF.md
+!/requirements.txt
+
+# Learned self-arrest implementation.
+!/himalaya_env.py
+!/diverse_scenarios.py
+!/train.py
+!/evaluate_diverse_policy.py
+!/record_diverse_scenarios.py
+!/evaluate_policy.py
+!/record_demo.py
+
+# Simulation assets and third-party Unitree model/license.
+!/assets/
+!/assets/**
+
+# Only canonical and archived fall-line policy artifacts.
+!/models/
+/models/*
+!/models/ppo_self_arrest/
+!/models/ppo_self_arrest/**
+!/models/ppo_self_arrest_fall_line_v1/
+!/models/ppo_self_arrest_fall_line_v1/**
+
+# Final evidence media only.
+!/videos/
+/videos/*
+!/videos/g1_self_arrest_diverse_suite.mp4
+!/videos/g1_self_arrest_diverse_suite.json
+!/videos/diverse_suite_inspection_montage.jpg
+
+# Never commit generated/runtime state if the whitelist expands later.
+**/.venv/
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+/logs/
+/runs/
+*.tmp
+*.log

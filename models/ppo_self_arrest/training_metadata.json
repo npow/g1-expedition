@@ -1,0 +1,220 @@
+{
+  "algorithm": "PPO",
+  "training_run_target_timesteps": 500000,
+  "selected_checkpoint_timesteps": 2169252,
+  "num_parallel_envs": 18,
+  "seed": 181,
+  "device": "cpu",
+  "torch_build": "2.13.0+cpu",
+  "cloud_compute_used": false,
+  "observation_dim": 125,
+  "action_dim": 14,
+  "policy_network": [
+    256,
+    256
+  ],
+  "controlled_actuator_ids": [
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35
+  ],
+  "controlled_joints": [
+    "left_shoulder_pitch_joint",
+    "left_shoulder_roll_joint",
+    "left_shoulder_yaw_joint",
+    "left_elbow_joint",
+    "left_wrist_roll_joint",
+    "left_wrist_pitch_joint",
+    "left_wrist_yaw_joint",
+    "right_shoulder_pitch_joint",
+    "right_shoulder_roll_joint",
+    "right_shoulder_yaw_joint",
+    "right_elbow_joint",
+    "right_wrist_roll_joint",
+    "right_wrist_pitch_joint",
+    "right_wrist_yaw_joint"
+  ],
+  "action_scale_radians": [
+    0.2,
+    0.2,
+    0.5,
+    0.3,
+    0.2,
+    0.25,
+    0.2,
+    0.7,
+    0.35,
+    0.45,
+    0.6,
+    0.3,
+    0.55,
+    0.3
+  ],
+  "velocity_curriculum": [
+    [
+      0,
+      [
+        0.25,
+        0.75
+      ]
+    ],
+    [
+      250000,
+      [
+        0.5,
+        1.0
+      ]
+    ],
+    [
+      500000,
+      [
+        1.0,
+        2.0
+      ]
+    ],
+    [
+      800000,
+      [
+        2.0,
+        3.0
+      ]
+    ],
+    [
+      1100000,
+      [
+        3.0,
+        4.0
+      ]
+    ],
+    [
+      1400000,
+      [
+        4.0,
+        5.0
+      ]
+    ]
+  ],
+  "reset_diversity_curriculum": [
+    [
+      [
+        -5.0,
+        5.0
+      ],
+      [
+        -0.2,
+        0.2
+      ],
+      [
+        -2.0,
+        2.0
+      ]
+    ],
+    [
+      [
+        -10.0,
+        10.0
+      ],
+      [
+        -0.4,
+        0.4
+      ],
+      [
+        -3.0,
+        3.0
+      ]
+    ],
+    [
+      [
+        -16.0,
+        16.0
+      ],
+      [
+        -0.65,
+        0.65
+      ],
+      [
+        -4.0,
+        4.0
+      ]
+    ],
+    [
+      [
+        -24.0,
+        24.0
+      ],
+      [
+        -0.9,
+        0.9
+      ],
+      [
+        -6.0,
+        6.0
+      ]
+    ],
+    [
+      [
+        -32.0,
+        32.0
+      ],
+      [
+        -1.2,
+        1.2
+      ],
+      [
+        -8.0,
+        8.0
+      ]
+    ],
+    [
+      [
+        -40.0,
+        40.0
+      ],
+      [
+        -1.5,
+        1.5
+      ],
+      [
+        -10.0,
+        10.0
+      ]
+    ]
+  ],
+  "resumed_from": "models/ppo_self_arrest_diverse_v6/checkpoints/g1_self_arrest_1989270_steps.zip",
+  "restarted_timestep_counter": false,
+  "learning_rate": 2e-05,
+  "engaged_action_initialization": false,
+  "training_anchor_probability": 0.9,
+  "checkpoint_interval": 20000,
+  "training_anchor_jitter": {
+    "downhill_speed_mps": 0.1,
+    "heading_degrees": 2.0,
+    "lateral_speed_mps": 0.1,
+    "roll_degrees": 1.0
+  },
+  "selection_source": "models/ppo_self_arrest_diverse_v7/checkpoints/g1_self_arrest_2169252_steps.zip",
+  "last_checkpoint": "models/ppo_self_arrest_diverse_v7/g1_self_arrest_last.zip",
+  "selection_rule": "checkpoint sweep over nine fixed oblique scenarios with body friction disabled, followed by 60 unseen randomized strict rollouts and paired causal ablations in evaluate_diverse_policy.py",
+  "fixed_named_scenarios": 9,
+  "randomized_selection_episodes": 60,
+  "randomized_envelope": {
+    "downhill_speed_mps": [4.0, 5.0],
+    "heading_degrees": [-40.0, 40.0],
+    "lateral_speed_mps": [-1.5, 1.5],
+    "roll_degrees": [-10.0, 10.0]
+  },
+  "selected_checkpoint_fixed_successes": "9/9",
+  "selected_checkpoint_randomized_successes": "60/60",
+  "selected_checkpoint_randomized_valid_plants": "60/60"
+}

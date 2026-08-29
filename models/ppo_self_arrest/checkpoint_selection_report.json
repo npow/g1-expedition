@@ -1,0 +1,27 @@
+{
+  "selected_checkpoint": "models/ppo_self_arrest_diverse_v7/checkpoints/g1_self_arrest_2169252_steps.zip",
+  "selected_checkpoint_timesteps": 2169252,
+  "fixed_named_scenarios_without_body_friction": {
+    "successes": 9,
+    "episodes": 9,
+    "minimum_first_contact_blade_angle_degrees": 20.64823235569206,
+    "minimum_left_grasp_contact_fraction": 0.746938775510204,
+    "maximum_final_speed_mps": 0.03990145377524135
+  },
+  "unseen_randomized_without_body_friction": {
+    "seed_start": 83000,
+    "successes": 60,
+    "valid_learned_plants": 60,
+    "episodes": 60,
+    "minimum_first_contact_blade_angle_degrees": 18.9823009523278,
+    "minimum_left_grasp_contact_fraction": 0.7196969696969697,
+    "maximum_final_speed_mps": 0.0632154541391284
+  },
+  "comparison_checkpoint": {
+    "checkpoint": "models/ppo_self_arrest_diverse_v7/checkpoints/g1_self_arrest_2309238_steps.zip",
+    "fixed_successes": "9/9",
+    "randomized_successes": "58/60",
+    "reason_rejected": "Two unseen randomized rollouts failed despite valid pick geometry; later training regressed robust grasp/loading behavior."
+  },
+  "selection_reason": "The selected checkpoint passed every fixed, randomized, pose, grip, plant-motion, blade-angle, body-friction, snow-resistance, and pick-disabled verification gate."
+}

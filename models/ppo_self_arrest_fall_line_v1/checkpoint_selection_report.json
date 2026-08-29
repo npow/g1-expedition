@@ -1,0 +1,81 @@
+{
+  "evaluation_seed": 50000,
+  "episodes_per_checkpoint": 30,
+  "initial_speed_range_mps": [4.0, 5.0],
+  "non_axe_body_friction_enabled": false,
+  "corrected_left_thumb_target_rad": 1.7,
+  "candidates": [
+    {
+      "timesteps": 199944,
+      "success_rate": 0.5666666667,
+      "mean_final_speed_mps": 0.524,
+      "minimum_stroke_at_first_contact_m": 0.168,
+      "minimum_first_contact_blade_angle_deg": 27.7,
+      "terminal_rolling_blade_angle_range_deg": [19.8, 28.2],
+      "mean_grip_score": 0.953,
+      "selected": false
+    },
+    {
+      "timesteps": 249930,
+      "success_rate": 1.0,
+      "mean_final_speed_mps": 0.035,
+      "minimum_stroke_at_first_contact_m": 0.170,
+      "minimum_first_contact_blade_angle_deg": 27.7,
+      "terminal_rolling_blade_angle_range_deg": [23.4, 24.2],
+      "mean_grip_score": 0.936,
+      "selected": true
+    },
+    {
+      "timesteps": 299916,
+      "success_rate": 1.0,
+      "mean_final_speed_mps": 0.053,
+      "minimum_stroke_at_first_contact_m": 0.169,
+      "minimum_first_contact_blade_angle_deg": 26.9,
+      "terminal_rolling_blade_angle_range_deg": [23.4, 24.2],
+      "mean_grip_score": 0.932,
+      "selected": false
+    },
+    {
+      "timesteps": 349902,
+      "success_rate": 0.2333333333,
+      "mean_final_speed_mps": 0.871,
+      "minimum_stroke_at_first_contact_m": 0.125,
+      "minimum_first_contact_blade_angle_deg": 25.4,
+      "terminal_rolling_blade_angle_range_deg": [19.7, 32.7],
+      "mean_grip_score": 0.978,
+      "selected": false
+    },
+    {
+      "timesteps": 399888,
+      "success_rate": 0.9666666667,
+      "mean_final_speed_mps": 0.028,
+      "minimum_stroke_at_first_contact_m": 0.173,
+      "minimum_first_contact_blade_angle_deg": 27.2,
+      "terminal_rolling_blade_angle_range_deg": [20.4, 33.5],
+      "mean_grip_score": 0.884,
+      "selected": false
+    },
+    {
+      "timesteps": 449874,
+      "success_rate": 0.3666666667,
+      "mean_final_speed_mps": 3.767,
+      "minimum_stroke_at_first_contact_m": 0.145,
+      "minimum_first_contact_blade_angle_deg": 21.9,
+      "terminal_rolling_blade_angle_range_deg": [19.7, 32.8],
+      "mean_grip_score": 0.965,
+      "selected": false
+    },
+    {
+      "timesteps": 499860,
+      "success_rate": 0.0,
+      "mean_final_speed_mps": 3.250,
+      "minimum_stroke_at_first_contact_m": 0.182,
+      "minimum_first_contact_blade_angle_deg": 27.4,
+      "terminal_rolling_blade_angle_range_deg": [20.4, 31.6],
+      "mean_grip_score": 0.879,
+      "selected": false
+    }
+  ],
+  "selection_reason": "Checkpoints 249930 and 299916 were the only candidates with 30/30 strict no-body-friction arrests and valid visible plants. Checkpoint 249930 had the stronger audited grip score and lower final speed.",
+  "canonical_checkpoint": "models/ppo_self_arrest/g1_self_arrest_final.zip"
+}
