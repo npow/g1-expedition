@@ -7,6 +7,7 @@
 !/.gitattributes
 !/README.md
 !/HANDOFF.md
+!/FIXED_LINE.md
 !/requirements.txt
 
 # Learned self-arrest implementation.
@@ -17,6 +18,25 @@
 !/record_diverse_scenarios.py
 !/evaluate_policy.py
 !/record_demo.py
+!/fixed_line_env.py
+!/fixed_line_slope_env.py
+!/fixed_line_visuals.py
+!/train_fixed_line.py
+!/evaluate_fixed_line.py
+!/record_fixed_line.py
+!/record_fixed_line_learning.py
+
+# Supporting generation and fixed-line validation tools.
+!/scripts/
+/scripts/*
+!/scripts/download_g1_assets.py
+!/scripts/find_axe_quat.py
+!/scripts/generate_ice_axe.py
+!/scripts/hf_train_fixed_line_job.py
+!/scripts/render_preview_frames.py
+!/scripts/test_hand_grasp.py
+!/scripts/test_visual.py
+!/scripts/validate_fixed_line_grasp.py
 
 # Simulation assets and third-party Unitree model/license.
 !/assets/
@@ -29,6 +49,8 @@
 !/models/ppo_self_arrest/**
 !/models/ppo_self_arrest_fall_line_v1/
 !/models/ppo_self_arrest_fall_line_v1/**
+!/models/ppo_fixed_line_slope/
+!/models/ppo_fixed_line_slope/**
 
 # Final evidence media only.
 !/videos/
@@ -36,6 +58,21 @@
 !/videos/g1_self_arrest_diverse_suite.mp4
 !/videos/g1_self_arrest_diverse_suite.json
 !/videos/diverse_suite_inspection_montage.jpg
+!/videos/g1_fixed_line_mountain_v2.mp4
+!/videos/g1_fixed_line_mountain_v2.json
+!/videos/g1_fixed_line_learned.mp4
+!/videos/g1_fixed_line_learned.json
+!/videos/g1_fixed_line_learning_progress.mp4
+!/videos/g1_fixed_line_learning_progress.json
+
+# Independent Isaac Lab cooperative-rescue scenario. Keep compact selected
+# artifacts, but not redundant raw Hugging Face job bundles or caches.
+!/cooperative_beam_isaaclab/
+!/cooperative_beam_isaaclab/**
+/cooperative_beam_isaaclab/hf_job_outputs/
+/cooperative_beam_isaaclab/.pytest_cache/
+/cooperative_beam_isaaclab/.ruff_cache/
+/cooperative_beam_isaaclab/src/*.egg-info/
 
 # Never commit generated/runtime state if the whitelist expands later.
 **/.venv/

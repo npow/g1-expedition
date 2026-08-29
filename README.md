@@ -1,69 +1,97 @@
-# Icefall G1
+# G1 Expedition
 
-A learned MuJoCo PPO policy that teaches a Unitree G1 to plant and load an
-ice axe during oblique, cross-slope mountaineering falls.
+Three simulation-first learned and hierarchical skills for the Unitree G1:
+mountaineering self-arrest, fixed-line ascent, and cooperative disaster-recovery
+transport.
 
-This is reinforcement learning, not a keyframed demonstration. One saved PPO
-checkpoint controls all 14 arm joints at 100 Hz across every recorded
-scenario. The task audits physical pick contact, blade angle, visible plant
-motion, opposing-digit grasp contacts, and axe placement.
+## Scenarios
 
-## Result
+| Scenario | Simulator / learning | Result and evidence |
+|---|---|---|
+| **Ice-axe self-arrest** | MuJoCo + PPO; all 14 arm joints | 9/9 named oblique falls and 60/60 unseen randomized falls arrest with non-axe body friction disabled. [Video](videos/g1_self_arrest_diverse_suite.mp4) · [technical handoff](HANDOFF.md) |
+| **Fixed-line ascender travel** | MuJoCo + PPO step requests over low-level gait/ascender retention | 10/10 perturbed resets travel 1.51 m uphill; disabling step actuation gives 0/10. [Mountain video](videos/g1_fixed_line_mountain_v2.mp4) · [learning progression](videos/g1_fixed_line_learning_progress.mp4) · [technical handoff](FIXED_LINE.md) |
+| **Cooperative rescue transport** | Isaac Lab + parameter-shared MAPPO over frozen AGILE locomotion | Variable teams of 2/3/5 G1s, physical tension-only slings, crate/timber/girder profiles, tests, and compact crate/timber pilot checkpoints. [Project documentation](cooperative_beam_isaaclab/README.md) |
 
-- **9/9** named oblique and mixed-sign scenarios arrest with all non-axe body
-  friction disabled.
-- **60/60** unseen randomized falls arrest over heading ±40°, cross-slope
-  velocity ±1.5 m/s, body roll ±10°, and downhill speed 4–5 m/s.
-- With physical pick collision disabled, **0/39** tests arrest and the robot
-  accelerates to approximately 13.53 m/s.
+All videos call their saved policies during physics rollout; they are not
+keyframed demonstrations. Each scenario documents its hierarchical boundary
+instead of presenting low-level prepared controllers as learned behavior.
 
-The full evidence video includes a fixed wide camera, live hand/pick view,
-slope-normal view, scenario parameters, and contact telemetry:
+## Repository map
 
-[Watch the diverse self-arrest suite](videos/g1_self_arrest_diverse_suite.mp4)
+```text
+HANDOFF.md                         self-arrest results, ablations, and limits
+FIXED_LINE.md                      ascender results, ablations, and limits
+himalaya_env.py                    MuJoCo self-arrest environment
+fixed_line_slope_env.py            MuJoCo inclined fixed-line environment
+train.py / train_fixed_line.py     PPO training entry points
+evaluate_*.py                      causal and policy evaluations
+record_*.py                        evidence-video renderers
+assets/                            G1, axe, rope/ascender, and terrain assets
+models/ppo_self_arrest/            canonical self-arrest PPO checkpoint
+models/ppo_fixed_line_slope/       canonical ascender PPO run/checkpoints
+cooperative_beam_isaaclab/         isolated Isaac Lab cooperative MAPPO project
+videos/                            final policy evidence and telemetry
+```
 
-For exact scenario tables, acceptance gates, causal ablations, training
-history, hashes, and limitations, see [HANDOFF.md](HANDOFF.md).
+Large videos and learned checkpoints use Git LFS.
 
-## Quick start
+## MuJoCo setup
+
+The self-arrest and ascender scenarios use the root environment:
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+```
 
+Evaluate and render self-arrest:
+
+```bash
 python evaluate_diverse_policy.py \
   --model models/ppo_self_arrest/g1_self_arrest_final.zip \
-  --randomized-episodes 60 \
-  --seed 73000 \
+  --randomized-episodes 60 --seed 73000 \
   --output models/ppo_self_arrest/diverse_evaluation_report.json
 
 MUJOCO_GL=egl python record_diverse_scenarios.py \
   --model models/ppo_self_arrest/g1_self_arrest_final.zip \
-  --output videos/g1_self_arrest_diverse_suite.mp4 \
-  --seed 81000
+  --output videos/g1_self_arrest_diverse_suite.mp4 --seed 81000
 ```
 
-## Repository map
+Evaluate and render fixed-line ascent:
 
-- `himalaya_env.py` — MuJoCo task, observations, rewards, success gates, and
-  causal ablations.
-- `train.py` — PPO curriculum and adversarial reset-anchor training.
-- `diverse_scenarios.py` — named scenarios and continuous reset envelope.
-- `evaluate_diverse_policy.py` — fixed, randomized, friction, snow, and
-  pick-disabled audits.
-- `record_diverse_scenarios.py` — multi-view evidence renderer.
-- `assets/` — G1, axe, scene, and natural snow assets.
-- `models/ppo_self_arrest/` — canonical policy and audit reports.
+```bash
+python evaluate_fixed_line.py \
+  --model models/ppo_fixed_line_slope/g1_fixed_line_final.zip \
+  --episodes 10 \
+  --output models/ppo_fixed_line_slope/evaluation_report.json
+
+MUJOCO_GL=egl python record_fixed_line.py \
+  --model models/ppo_fixed_line_slope/g1_fixed_line_final.zip \
+  --output videos/g1_fixed_line_mountain_v2.mp4
+```
+
+## Isaac Lab setup
+
+Cooperative transport is intentionally isolated because it requires Isaac Sim,
+Isaac Lab, skrl, and a CUDA-capable local system. See
+[`cooperative_beam_isaaclab/README.md`](cooperative_beam_isaaclab/README.md)
+for installation, smoke tests, MAPPO training/evaluation, and checkpoint usage.
+
+The project includes simulator-independent tests:
+
+```bash
+cd cooperative_beam_isaaclab
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest
+```
 
 ## Scope and safety
 
-This is a simulation-only hierarchical skill. The initial prone pose, fingers,
-legs, and waist use low-level control; PPO learns the two-arm plant and load.
-The axe remains rigidly retained at the right palm. This is not evidence of
-learned grasp acquisition, tumbling recovery, hardware readiness, or real
-mountaineering safety. Do not deploy it on a robot without a separate,
-conservative sim-to-real validation and safety program.
+These are simulation research tasks, not deployment-ready robot skills or
+mountaineering/rescue safety systems. Prepared poses, low-level controllers,
+tool retention, frozen locomotion, or slings are explicitly documented for
+each scenario. Hardware use requires a separate conservative sim-to-real,
+fall-protection, load-rating, and emergency-stop program.
 
 The Unitree G1 model under `assets/unitree_g1/` retains its BSD-3-Clause
 license and attribution.

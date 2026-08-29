@@ -1,0 +1,91 @@
+{
+  "video": "videos/g1_fixed_line_learning_progress.mp4",
+  "same_deterministic_reset_seed": 2027,
+  "synchronized_rollouts": true,
+  "stages": [
+    {
+      "label": "Initialized policy \u00b7 0 interactions",
+      "interactions": 0,
+      "checkpoint": null,
+      "success": false,
+      "ascent_m": 0.0040497097909121815,
+      "completed_cycles": 0,
+      "policy_steps": 1100,
+      "minimum_grasp_score": 0.39884897890289067,
+      "maximum_left_grip_error_m": 0.4781506184564288,
+      "maximum_right_grip_error_m": 0.11919955161950148,
+      "minimum_hand_separation_m": 0.3891144350986972,
+      "mean_action": [
+        0.0012877242406830192,
+        -0.0028894757851958275
+      ],
+      "action_std": [
+        4.144853664911352e-05,
+        5.395371772465296e-05
+      ]
+    },
+    {
+      "label": "Early policy \u00b7 39,984 interactions",
+      "interactions": 39984,
+      "checkpoint": "models/ppo_fixed_line_slope/checkpoints/g1_fixed_line_39984_steps.zip",
+      "success": false,
+      "ascent_m": 0.0040497097909121815,
+      "completed_cycles": 0,
+      "policy_steps": 1100,
+      "minimum_grasp_score": 0.39884897890289067,
+      "maximum_left_grip_error_m": 0.4781506184564288,
+      "maximum_right_grip_error_m": 0.11919955161950148,
+      "minimum_hand_separation_m": 0.3891144350986972,
+      "mean_action": [
+        0.07809106260538101,
+        0.02707628905773163
+      ],
+      "action_std": [
+        0.0010161877144128084,
+        0.0027714751195162535
+      ]
+    },
+    {
+      "label": "Emerging gait \u00b7 79,968 interactions",
+      "interactions": 79968,
+      "checkpoint": "models/ppo_fixed_line_slope/checkpoints/g1_fixed_line_79968_steps.zip",
+      "success": false,
+      "ascent_m": 1.3325316322433771,
+      "completed_cycles": 43,
+      "policy_steps": 1100,
+      "minimum_grasp_score": 0.3636298158373365,
+      "maximum_left_grip_error_m": 0.46594931115055344,
+      "maximum_right_grip_error_m": 0.12762671754500773,
+      "minimum_hand_separation_m": 0.37712089702647317,
+      "mean_action": [
+        0.13416260480880737,
+        0.019823424518108368
+      ],
+      "action_std": [
+        0.1101134642958641,
+        0.14531244337558746
+      ]
+    },
+    {
+      "label": "Selected policy \u00b7 259,896 interactions",
+      "interactions": 259896,
+      "checkpoint": "models/ppo_fixed_line_slope/g1_fixed_line_final.zip",
+      "success": true,
+      "ascent_m": 1.5098255618486451,
+      "completed_cycles": 44,
+      "policy_steps": 1016,
+      "minimum_grasp_score": 0.3637771565462475,
+      "maximum_left_grip_error_m": 0.4635570147957799,
+      "maximum_right_grip_error_m": 0.12759100284635988,
+      "minimum_hand_separation_m": 0.37677084237033565,
+      "mean_action": [
+        0.214664489030838,
+        -0.03937263414263725
+      ],
+      "action_std": [
+        0.22770477831363678,
+        0.3234592080116272
+      ]
+    }
+  ]
+}

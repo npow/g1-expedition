@@ -1,0 +1,54 @@
+{
+  "checkpoint": "models/ppo_fixed_line_slope/g1_fixed_line_final.zip",
+  "video": "videos/g1_fixed_line_learned.mp4",
+  "success": true,
+  "ascent_m": 1.5098255618486451,
+  "along_slope_ascent_m": 1.5098255618486451,
+  "high_water_ascent_m": 1.5116357284966542,
+  "completed_cycles": 44,
+  "completed_alternating_steps": 44,
+  "descent_from_high_water_m": 0.0018101666480090373,
+  "line_load_fraction": 0.3799212598425197,
+  "grounded_fraction": 0.9291338582677166,
+  "left_boot_contact_fraction": 0.5196850393700787,
+  "right_boot_contact_fraction": 0.5295275590551181,
+  "double_support_fraction": 0.12007874015748031,
+  "maximum_airborne_streak": 1,
+  "vertical_gain_m": 0.7088096626192603,
+  "peak_line_load_n": 217.04727181821863,
+  "peak_ground_load_n": 593.821793215394,
+  "minimum_grasp_score": 0.3637771565462475,
+  "mean_grasp_score": 0.5272180703279646,
+  "maximum_left_grip_error_m": 0.4635570147957799,
+  "maximum_right_grip_error_m": 0.12759100284635988,
+  "minimum_hand_separation_m": 0.37677084237033565,
+  "cross_hand_collision_steps": 0,
+  "wall_hand_collision_steps": 0,
+  "policy_steps": 1016,
+  "mean_action": [
+    0.21466466189200778,
+    -0.0393726406362289
+  ],
+  "action_std": [
+    0.2277048380374253,
+    0.3234592672712343
+  ],
+  "minimum_action": [
+    -0.2718789279460907,
+    -0.49727755784988403
+  ],
+  "maximum_action": [
+    0.5988495945930481,
+    0.8721278309822083
+  ],
+  "first_action": [
+    0.5893513560295105,
+    0.09850526601076126
+  ],
+  "final_action": [
+    0.5585627555847168,
+    -0.25799480080604553
+  ],
+  "minimum_ascent_m": 0.0019137749319025343,
+  "live_equipment_closeup_inset": true
+}
