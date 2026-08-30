@@ -10,6 +10,10 @@
 !/FIXED_LINE.md
 !/GETUP.md
 !/requirements.txt
+!/submission/
+!/submission/**
+/submission/build/
+/submission/node_modules/
 
 # Learned self-arrest implementation.
 !/himalaya_env.py
@@ -116,6 +120,7 @@
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.DS_Store
 /logs/
 /runs/
 *.tmp

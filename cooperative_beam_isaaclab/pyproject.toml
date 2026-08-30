@@ -9,6 +9,9 @@ description = "Variable-team Unitree G1 cooperative rescue-load tasks for Isaac 
 requires-python = ">=3.12"
 dependencies = []
 
+[project.optional-dependencies]
+livekit = ["livekit>=1.1.16,<2"]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 

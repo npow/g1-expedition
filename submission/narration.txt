@@ -1,0 +1,13 @@
+In the Himalayas, walking is not enough. Optimus Prime trained G1 for four failure modes: falls, lost footing, cliff descent, and blocked routes.
+
+First: self-arrest. During oblique falls up to five meters per second, G1 plants the axe, loads the pick, and stops before leaving the route. Across fixed evaluation gates: nine of nine named falls and sixty of sixty randomized falls.
+
+Next: fall recovery. A safety line catches the initial loss of traction, the controller uses rope tension to recover its stance, and a learned get-up returns the robot to its feet so the route can continue.
+
+For cliffs, the rappel policy coordinates braking with foot placement on a sixty-five-degree face. Watch the brake hand hold tension while the feet search for stable contacts: a two-meter descent with zero positive brake work.
+
+A storm-felled tree can block an approach. One robot first tests the load and refuses the overload. When the mass is safe, two G1s share sling tension, lift together, lower together, and retreat without twisting the log.
+
+And if balance is lost, they abort instead of forcing the task. The same physical loop turns mountain failure modes into recoverable robot behavior.
+
+Optimus Prime. Four skills for the parts of the mountain humans should not have to face.

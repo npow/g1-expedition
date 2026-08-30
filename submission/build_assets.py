@@ -1,0 +1,238 @@
+from __future__ import annotations
+
+from pathlib import Path
+from PIL import Image, ImageDraw, ImageFont
+import math
+import textwrap
+
+W, H = 1920, 1080
+ROOT = Path(__file__).resolve().parent
+OUT = ROOT / "build" / "cards"
+THEME = ROOT / "assets" / "theme" / "himalaya_poster_bg.png"
+ACTION_ART = {
+    "self": ROOT / "assets" / "theme" / "action_self.png",
+    "recovery": ROOT / "assets" / "theme" / "action_recovery.png",
+    "rappel": ROOT / "assets" / "theme" / "action_rappel.png",
+    "team": ROOT / "assets" / "theme" / "action_team.png",
+}
+OUT.mkdir(parents=True, exist_ok=True)
+
+REGULAR = "/System/Library/Fonts/Supplemental/Arial.ttf"
+BOLD = "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
+NARROW = "/System/Library/Fonts/Supplemental/Arial Narrow Bold.ttf"
+PAPER = (246, 244, 236)
+INK = (18, 20, 21)
+MUTED = (78, 84, 85)
+BLUE = (5, 70, 118)
+ORANGE = (255, 77, 35)
+WHITE = (251, 250, 245)
+
+
+def font(size: int, bold=False, narrow=False):
+    return ImageFont.truetype(NARROW if narrow else (BOLD if bold else REGULAR), size)
+
+
+def crop_fill(im: Image.Image) -> Image.Image:
+    r = max(W / im.width, H / im.height)
+    im = im.resize((round(im.width*r), round(im.height*r)), Image.Resampling.LANCZOS)
+    x, y = (im.width-W)//2, (im.height-H)//2
+    return im.crop((x, y, x+W, y+H))
+
+
+def crop_to(im: Image.Image, width: int, height: int) -> Image.Image:
+    r = max(width / im.width, height / im.height)
+    im = im.resize((round(im.width*r), round(im.height*r)), Image.Resampling.LANCZOS)
+    x, y = (im.width-width)//2, (im.height-height)//2
+    return im.crop((x, y, x+width, y+height))
+
+
+def theme_bg() -> Image.Image:
+    return crop_fill(Image.open(THEME).convert("RGBA"))
+
+
+def paper_bg() -> Image.Image:
+    im = Image.new("RGBA", (W, H), PAPER + (255,))
+    art = theme_bg()
+    art.putalpha(45)
+    im = Image.alpha_composite(im, art)
+    d = ImageDraw.Draw(im, "RGBA")
+    for x in range(20, W, 22):
+        for y in range(20, H, 22):
+            d.ellipse((x, y, x+1, y+1), fill=(25, 28, 28, 22))
+    d.rectangle((0, 0, 18, H), fill=ORANGE + (255,))
+    return im
+
+
+def tx(d, xy, value, size, fill=INK, bold=False, narrow=False, anchor=None, spacing=8):
+    d.multiline_text(xy, value, font=font(size, bold=bold, narrow=narrow), fill=fill, anchor=anchor, spacing=spacing)
+
+
+def technical_marks(d):
+    d.line((92, 90, 240, 90), fill=ORANGE + (255,), width=3)
+    for i in range(11):
+        x = 260+i*18
+        d.line((x, 76, x, 104), fill=INK + (170,), width=2)
+    d.ellipse((1680, 76, 1690, 86), fill=ORANGE + (255,))
+    d.line((1690, 81, 1815, 81), fill=ORANGE + (180,), width=2)
+
+
+def save_title():
+    im = theme_bg(); d = ImageDraw.Draw(im, "RGBA"); technical_marks(d)
+    tx(d, (92, 124), "AUGUST 29–30  /  HIMALAYA ROBOTICS HACKATHON 2026", 25, fill=ORANGE, bold=True)
+    tx(d, (90, 210), "OPTIMUS\nPRIME", 102, fill=INK, bold=True, narrow=True, spacing=-8)
+    d.rectangle((86, 455, 760, 680), fill=ORANGE + (245,))
+    tx(d, (120, 485), "G1\nEXPEDITION", 76, fill=INK, bold=True, narrow=True, spacing=-4)
+    tx(d, (92, 725), "EXTREME-CONDITION ROBOTICS", 28, fill=INK, bold=True)
+    tx(d, (92, 780), "Movement  /  Action  /  Thinking", 27, fill=MUTED)
+    d.rectangle((90, 875, 535, 920), fill=INK + (245,))
+    tx(d, (112, 884), "FOUR SKILLS  ·  ONE PHYSICAL LOOP", 21, fill=WHITE, bold=True)
+    im.save(OUT / "title.png")
+
+
+def arrow(d, x1, y1, x2, y2):
+    d.line((x1, y1, x2, y2), fill=ORANGE + (255,), width=6)
+    a, s = math.atan2(y2-y1, x2-x1), 18
+    d.polygon([(x2,y2),(x2-s*math.cos(a-.55),y2-s*math.sin(a-.55)),(x2-s*math.cos(a+.55),y2-s*math.sin(a+.55))], fill=ORANGE + (255,))
+
+
+def save_diagram():
+    im = paper_bg(); d = ImageDraw.Draw(im, "RGBA"); technical_marks(d)
+    tx(d, (90, 112), "TECHNICAL ARCHITECTURE", 64, fill=INK, bold=True, narrow=True)
+    tx(d, (94, 188), "TWO SIMULATORS  /  ONE LIVE INFERENCE BUS", 25, fill=ORANGE, bold=True)
+
+    cards = [
+        (82, 270, 900, 555, BLUE, "MUJOCO  /  SINGLE-ROBOT", "SELF-ARREST  ·  FIXED-LINE  ·  GET-UP",
+         "PPO task policies  ·  256×256 MLPs\n29-DoF whole-body recovery prior"),
+        (1020, 270, 1838, 555, ORANGE, "ISAAC LAB  /  MULTI-ROBOT", "COOPERATIVE LIFT",
+         "shared MAPPO  ·  teammate attention\n10 actions / G1  ·  frozen AGILE legs"),
+    ]
+    for x1,y1,x2,y2,color,head,skills,detail in cards:
+        d.rectangle((x1,y1,x2,y2), fill=WHITE + (246,), outline=INK + (255,), width=3)
+        d.rectangle((x1,y1,x2,y1+72), fill=color + (250,))
+        tx(d, (x1+25,y1+18), head, 31, fill=WHITE, bold=True)
+        tx(d, (x1+28,y1+108), skills, 25, fill=INK, bold=True)
+        d.line((x1+28,y1+157,x2-28,y1+157),fill=ORANGE+(255,),width=4)
+        tx(d, (x1+28,y1+183), detail, 25, fill=INK, bold=True, spacing=10)
+
+    tx(d, (84, 632), "DEPLOYED INFERENCE  /  REPLACES N × N ROBOT LINKS", 24, fill=ORANGE, bold=True)
+    robot_boxes = [(82, 660, "G1  0"), (82, 735, "G1  1"), (82, 810, "G1  N")]
+    actor_boxes = [(1480, 660, "ACTOR  0"), (1480, 735, "ACTOR  1"), (1480, 810, "ACTOR  N")]
+    for x,y,label in robot_boxes:
+        d.rectangle((x, y, x+300, y+58), fill=INK + (248,), outline=ORANGE + (255,), width=3)
+        tx(d, (x+20, y+14), label, 24, fill=WHITE, bold=True, narrow=True)
+        tx(d, (x+282, y+18), "63 B", 18, fill=ORANGE, bold=True, anchor="ra")
+        arrow(d, x+300, y+29, 675, y+29)
+
+    d.rectangle((700, 660, 1260, 868), fill=ORANGE + (248,), outline=INK + (255,), width=3)
+    tx(d, (980, 710), "LIVEKIT ROOM", 43, fill=INK, bold=True, narrow=True, anchor="mm")
+    tx(d, (980, 770), "POSE  ·  VELOCITY  ·  LOAD", 22, fill=INK, bold=True, anchor="mm")
+    tx(d, (980, 821), "STATE FAN-OUT  /  STALE → ZERO", 21, fill=INK, bold=True, anchor="mm")
+
+    for x,y,label in actor_boxes:
+        arrow(d, 1285, y+29, x-25, y+29)
+        d.rectangle((x, y, x+358, y+58), fill=WHITE + (246,), outline=INK + (255,), width=3)
+        tx(d, (x+20, y+14), label, 23, fill=INK, bold=True, narrow=True)
+        tx(d, (x+338, y+18), "N−1 TOKENS", 17, fill=ORANGE, bold=True, anchor="ra")
+
+    d.rectangle((240, 930, 1680, 1006), fill=INK + (248,))
+    tx(d, (960, 955), "PUBLISH ONCE / ROBOT  ·  EVERY ACTOR RECEIVES N−1 TEAMMATE TOKENS", 27, fill=WHITE, bold=True, anchor="mm")
+    im.save(OUT / "diagram.png")
+
+
+def save_evidence():
+    im = paper_bg(); d = ImageDraw.Draw(im, "RGBA"); technical_marks(d)
+    tx(d, (90, 115), "WHAT WE MEASURED", 66, fill=INK, bold=True, narrow=True)
+    tx(d, (94, 188), "FIXED TESTS  /  PHYSICAL OUTCOMES", 25, fill=ORANGE, bold=True)
+    items = [
+        ("self", "SELF-ARREST", "9 / 9 SCENARIOS", "60 / 60 unseen falls arrested"),
+        ("recovery", "FALL RECOVERY", "RECOVERS TO STAND", "then continues uphill"),
+        ("rappel", "RAPPEL", "2.00 m DESCENT", "7 / 10 randomized starts passed"),
+        ("team", "TEAM LIFT", "50 / 50 SHARE", "overload or imbalance → abort"),
+    ]
+    x0, gap, bw = 82, 25, 421
+    for i,(key,head,big,note) in enumerate(items):
+        x = x0+i*(bw+gap)
+        d.rectangle((x,275,x+bw,910), fill=WHITE + (244,), outline=INK + (255,), width=3)
+        art = crop_to(Image.open(ACTION_ART[key]).convert("RGBA"), bw-6, 312)
+        im.alpha_composite(art, (x+3, 278))
+        d.rectangle((x,520,x+bw,590), fill=(ORANGE if i in (1,3) else BLUE) + (245,))
+        tx(d,(x+22,540),head,28,fill=WHITE,bold=True)
+        tx(d,((x+x+bw)//2,680),big,39,fill=INK,bold=True,narrow=True,anchor="mm")
+        d.line((x+35,735,x+bw-35,735),fill=ORANGE+(255,),width=4)
+        tx(d,((x+x+bw)//2,790),note,23,fill=INK,bold=True,anchor="ma")
+    tx(d,(960,985),"MOVEMENT  /  ACTION  /  THINKING",24,fill=INK,bold=True,anchor="ma")
+    im.save(OUT / "evidence.png")
+
+
+def save_outro():
+    im = theme_bg(); d = ImageDraw.Draw(im, "RGBA"); technical_marks(d)
+    d.rectangle((75, 185, 820, 780), fill=ORANGE + (245,))
+    tx(d,(112,230),"OPTIMUS\nPRIME",88,fill=INK,bold=True,narrow=True,spacing=-8)
+    d.line((112,475,755,475),fill=INK+(255,),width=5)
+    tx(d,(112,515),"G1 EXPEDITION",44,fill=INK,bold=True,narrow=True)
+    tx(d,(112,600),"Training robots for the parts\nof the mountain humans\nshould not have to face.",31,fill=INK,bold=True,spacing=10)
+    tx(d,(90,900),"HIMALAYA ROBOTICS HACKATHON 2026",25,fill=INK,bold=True)
+    im.save(OUT / "outro.png")
+
+
+def save_pitch_problem():
+    im = theme_bg(); d = ImageDraw.Draw(im, "RGBA"); technical_marks(d)
+    d.rectangle((74, 130, 940, 910), fill=ORANGE + (246,), outline=INK + (255,), width=3)
+    tx(d, (112, 170), "OPTIMUS PRIME  /  G1 EXPEDITION", 25, fill=INK, bold=True)
+    tx(d, (108, 260), "THE MOUNTAIN\nAMPLIFIES\nFAILURE", 86, fill=INK, bold=True, narrow=True, spacing=-7)
+    d.rectangle((110, 590, 850, 657), fill=INK + (248,))
+    tx(d, (138, 606), "A SLIP BECOMES A FALL.", 30, fill=WHITE, bold=True)
+    d.rectangle((110, 680, 850, 747), fill=INK + (248,))
+    tx(d, (138, 696), "A FALL BECOMES A RESCUE.", 30, fill=WHITE, bold=True)
+    tx(d, (112, 800), "G1 must use tools, recover, and know when to stop.", 27, fill=INK, bold=True)
+    im.save(OUT / "pitch_problem.png")
+
+
+def save_pitch_skills():
+    im = paper_bg(); d = ImageDraw.Draw(im, "RGBA"); technical_marks(d)
+    tx(d, (90, 112), "FOUR SKILLS FOR ALPINE FAILURE.", 62, fill=INK, bold=True, narrow=True)
+    tx(d, (94, 185), "ONE EXPEDITION SYSTEM", 25, fill=ORANGE, bold=True)
+    items = [
+        ("self", 82, 275, "01  SELF-ARREST", "STOP THE SLIDE", BLUE),
+        ("recovery", 974, 275, "02  FALL RECOVERY", "GET BACK UP", ORANGE),
+        ("rappel", 82, 635, "03  CONTROLLED RAPPEL", "CONTROL THE DESCENT", BLUE),
+        ("team", 974, 635, "04  TEAM LIFT", "SHARE OR ABORT", ORANGE),
+    ]
+    for key,x,y,head,purpose,color in items:
+        art = crop_to(Image.open(ACTION_ART[key]).convert("RGBA"), 830, 285)
+        im.alpha_composite(art, (x, y))
+        d.rectangle((x, y+210, x+830, y+285), fill=color + (246,))
+        tx(d, (x+22, y+228), head, 28, fill=WHITE, bold=True)
+        d.rectangle((x+465, y+30, x+800, y+95), fill=INK + (242,))
+        tx(d, (x+632, y+49), purpose, 22, fill=WHITE, bold=True, anchor="ma")
+    im.save(OUT / "pitch_skills.png")
+
+
+def overlay(name,title,subtitle,metric,accent=ORANGE):
+    im=Image.new("RGBA",(W,H),(0,0,0,0)); d=ImageDraw.Draw(im,"RGBA")
+    d.rectangle((48,820,925,895),fill=accent+(245,))
+    tx(d,(76,838),title,34,fill=INK,bold=True,narrow=True)
+    d.rectangle((48,895,925,995),fill=WHITE+(238,),outline=INK+(230,),width=2)
+    tx(d,(76,925),subtitle,23,fill=INK)
+    d.rectangle((1480,870,1870,995),fill=INK+(238,))
+    tx(d,(1675,914),metric,27,fill=ORANGE,bold=True,anchor="mm")
+    im.save(OUT/f"overlay_{name}.png")
+
+
+def montage_overlay():
+    im=Image.new("RGBA",(W,H),(0,0,0,0)); d=ImageDraw.Draw(im,"RGBA")
+    specs=[(35,35,"SELF-ARREST"),(995,35,"FALL RECOVERY"),(35,575,"PREPARED RAPPEL"),(995,575,"COORDINATED LIFT")]
+    for i,(x,y,v) in enumerate(specs):
+        color=ORANGE if i in (1,3) else BLUE
+        d.rectangle((x,y,x+420,y+64),fill=color+(245,))
+        tx(d,(x+20,y+16),v,27,fill=WHITE,bold=True)
+    d.rectangle((655,1013,1265,1068),fill=INK+(238,))
+    tx(d,(960,1025),"MOVEMENT  /  ACTION  /  THINKING",22,fill=ORANGE,bold=True,anchor="ma")
+    im.save(OUT/"overlay_montage.png")
+
+
+save_title(); save_diagram(); save_evidence(); save_outro(); save_pitch_problem(); save_pitch_skills(); montage_overlay()
+overlay("self","01  ICE-AXE SELF-ARREST","Stop an uncontrolled fall before the robot leaves the route","9/9 + 60/60",BLUE)
+overlay("fixed","02  FALL RECOVERY","Load the line, regain footing, continue the route","recover + continue",ORANGE)
+overlay("rappel","03  CONTROLLED RAPPEL","Coordinate brake friction with stable foot placements","2.00 m descent",BLUE)
+overlay("team","04  COORDINATED LIFT","Clear a blocked approach without exceeding force limits","safe abort logic",ORANGE)

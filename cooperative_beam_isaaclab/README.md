@@ -31,6 +31,8 @@ The registered examples deliberately vary object scale, mass, and team size:
 - Failure detection for falls, drops, and excessive sling extension, plus success and load diagnostics.
 - A parameter-shared MAPPO actor and centralized critic. The actor cross-attends from local state to a variable
   number of exchangeable teammate tokens, following TeamHOI's coordination structure. IPPO remains an ablation.
+- A LiveKit deployment transport that publishes one compact state stream per robot and reconstructs the same
+  teammate-token observation expected by the frozen actor, without an all-to-all robot connection graph.
 - A staged curriculum sized to the actual 10,000-iteration run: learn lift/level first, gradually add
   transport/turning over 24k–150k vector control steps, and increase mass to 18 kg over 180k steps.
 
@@ -46,11 +48,12 @@ For odd team sizes, equal per-robot tension would put more total force on the si
 payload. The load target therefore assigns half of the total support to each side and divides that half among the
 robots on that side (for three robots, `25% / 50% / 25%`). No-tension slings receive no load-balancing reward.
 
-Coordination therefore comes from three channels:
+Coordination therefore comes from four channels:
 
 1. Mechanical coupling through the common payload and slings.
 2. One shared policy trained on experience from every station and a shared objective that rewards balanced tension.
 3. Explicit low-bandwidth teammate tokens, while privileged global state is limited to the training critic.
+4. At deployed inference, a LiveKit room fans each robot's single state uplink to every teammate process.
 
 The learned layer does not rediscover walking. The frozen AGILE controller observes the full 29-DoF body, including
 the loaded arms, and stabilizes the legs from the four high-level commands. This is the main sample-efficiency gain.
@@ -58,6 +61,43 @@ the loaded arms, and stabilizes the legs from the four high-level commands. This
 This is a prepared-sling transport task. It intentionally avoids making dexterous grasp discovery the first
 bottleneck. A later experiment can replace the sling model with contact-only grasping without changing the MARL
 interface.
+
+## LiveKit deployment topology
+
+Vectorized training keeps teammate tensors in-process. Deployment preserves the actor contract but replaces that
+memory boundary with a LiveKit named DataTrack:
+
+```text
+g1_0 -- 63-byte state --\
+g1_1 -- 63-byte state ----> LiveKit room fan-out ----> teammate-token adapter ----> shared MAPPO actor
+g1_N -- 63-byte state --/
+```
+
+Every packet carries robot identity, sequence, timestamp, world pose, linear velocity, and measured load ratio.
+Each receiver converts the other robots into recipient-frame relative position, relative velocity, and load-share
+tokens. Out-of-order packets are rejected; missing or stale teammate state is zero-filled, so local proprioception
+and the frozen AGILE servo path do not wait on the network. Each robot maintains one state uplink to the room rather
+than direct links to every other robot.
+
+The binary codec, freshness gate, and checkpoint-compatible observation adapter live in
+[`livekit_state_bus.py`](src/cooperative_beam_isaaclab/tasks/livekit_state_bus.py). Run
+[`livekit_state_bridge.py`](scripts/livekit_state_bridge.py) beside each deployed policy process:
+
+```bash
+uv sync --extra livekit
+
+LIVEKIT_URL=wss://your-project.livekit.cloud \
+LIVEKIT_TOKEN="$G1_0_TOKEN" \
+python scripts/livekit_state_bridge.py \
+  --robot-id g1_0 --team g1_0,g1_1,g1_2
+```
+
+The bridge reads local estimator state as JSON Lines on standard input. If the line also includes the actor's
+98-value local observation, it returns the full frozen-checkpoint observation; otherwise it returns just the fresh
+teammate fields and freshness mask. One room token should be minted per canonical identity (`g1_0`, `g1_1`, ...).
+This follows the hackathon's official
+[LiveKit robotics guidance](https://www.livekit.info/himalaya-robotics-hack): WebRTC transport for robot telemetry,
+remote inference, operator video, and voice, without direct VPN or port-forwarding dependencies.
 
 ## Local setup and validation
 
@@ -278,6 +318,7 @@ src/cooperative_beam_isaaclab/tasks/
   hierarchical_controller.py    frozen AGILE batch plus GPU wrist IK
   control_contract.py           exact high-level/AGILE tensor contracts
   formation.py                  alternating-side station and load-target geometry
+  livekit_state_bus.py          binary state track, freshness gate, actor adapter
   teamhoi_model.py              shared teammate-token attention actor
   parameter_sharing.py          shared skrl MAPPO actor/critic/optimizer adapter
   trajectory.py                 simulator-independent trajectory/reward helpers
@@ -287,6 +328,7 @@ scripts/
   benchmark_matrix.py           mass × team-size screening matrix
   train.py                      wrapper around Isaac Lab's maintained skrl trainer
   evaluate.py                   finite frozen-policy evaluation and JSON metrics
+  livekit_state_bridge.py       deployed LiveKit transport beside one G1 actor
   run_local.sh                  local MAPPO launch
   hf_job.sh                     iteration-controlled Hugging Face Jobs launch
   hf_eval_job.sh                remote frozen-policy evaluation launch
@@ -294,4 +336,5 @@ scripts/
   hf_heldout_smoke_matrix.sh     one-factor and compound held-out physics probes
 tests/
   test_trajectory.py            trajectory and reward invariants
+  test_livekit_state_bus.py     packet, ordering, frame transform, stale-state tests
 ```
