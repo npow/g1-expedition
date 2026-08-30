@@ -3,9 +3,11 @@
 This directory contains the submitted two-minute demo, the 90-second pitch
 deck, and every local source needed to edit or regenerate them.
 
+![Optimus Prime — G1 Expedition](optimus_prime_project_cover.png)
+
 ## Final deliverables
 
-- `optimus_prime_g1_expedition_2min.mp4` — 82 seconds, 1080p H.264,
+- `optimus_prime_g1_expedition_2min.mp4` — 77 seconds, 1080p H.264,
   AAC voiceover, burned-in captions
 - `optimus_prime_g1_expedition_2min.srt` — separate subtitle track
 - `optimus_prime_pitch_90s.pptx` and `.pdf` — simplified six-slide pitch
@@ -27,7 +29,6 @@ deck, and every local source needed to edit or regenerate them.
 | 0:40–0:49 | Controlled rappel: brake control plus one foot-placement sequence |
 | 0:49–0:57 | Overload refusal, beginning directly on the action |
 | 0:57–1:17 | Cooperative lift and LiveKit telemetry/voice control |
-| 1:17–1:22 | Closing card |
 
 The pitch carries the problem, extreme-condition motivation, technical
 architecture, and quantified evidence. The demo stays below the two-minute

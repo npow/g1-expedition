@@ -9,5 +9,3 @@ For cliffs, the rappel policy coordinates braking with foot placement on a sixty
 A fallen tree can block the route. One robot rejects an overload. At a safe mass, two G1s share tension, lift, lower, and retreat together.
 
 LiveKit carries state and voice. Ask for the load, or say “move the log.” After confirmation, the agent sends a gated start intent to the robot bridge.
-
-Optimus Prime. Local policies move; LiveKit connects the team and operator.

@@ -25,8 +25,8 @@ if not API_KEY:
 # choice to the account, e.g. ELEVEN_VOICE_ID=... zsh build_video.sh.
 VOICE_ID = os.environ.get("ELEVEN_VOICE_ID", "JBFqnCBsd6RMkjVDRZzb")
 MODEL_ID = "eleven_multilingual_v2"
-VIDEO_DURATION = float(os.environ.get("VIDEO_DURATION", "82"))
-STARTS = [0.4, 8.7, 16.7, 40.2, 49.2, 61.5, 77.0]
+VIDEO_DURATION = float(os.environ.get("VIDEO_DURATION", "77"))
+STARTS = [0.4, 8.7, 16.7, 40.2, 49.2, 61.5]
 PARAGRAPHS = [p.strip() for p in (ROOT / "narration.txt").read_text().split("\n\n") if p.strip()]
 if len(PARAGRAPHS) != len(STARTS):
     raise SystemExit(f"Expected {len(STARTS)} narration paragraphs, found {len(PARAGRAPHS)}")
@@ -183,6 +183,8 @@ def stamp(seconds):
 
 with srt.open("w") as f:
     for i, (start, end, value) in enumerate(cues, 1):
-        f.write(f"{i}\n{stamp(start)} --> {stamp(end)}\n{value}\n\n")
+        f.write(f"{i}\n{stamp(start)} --> {stamp(end)}\n{value}\n")
+        if i != len(cues):
+            f.write("\n")
 
 print(f"wrote {len(cues)} caption cues")
