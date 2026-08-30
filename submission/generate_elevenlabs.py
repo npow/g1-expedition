@@ -24,8 +24,8 @@ if not API_KEY:
 # George is the official public voice used by ElevenLabs in its API example.
 VOICE_ID = "JBFqnCBsd6RMkjVDRZzb"
 MODEL_ID = "eleven_multilingual_v2"
-VIDEO_DURATION = float(os.environ.get("VIDEO_DURATION", "88.5"))
-STARTS = [0.4, 8.7, 19.0, 40.2, 56.2, 68.5, 84.2]
+VIDEO_DURATION = float(os.environ.get("VIDEO_DURATION", "89"))
+STARTS = [0.4, 8.7, 16.7, 40.2, 56.2, 68.5, 84.0]
 PARAGRAPHS = [p.strip() for p in (ROOT / "narration.txt").read_text().split("\n\n") if p.strip()]
 if len(PARAGRAPHS) != len(STARTS):
     raise SystemExit(f"Expected {len(STARTS)} narration paragraphs, found {len(PARAGRAPHS)}")

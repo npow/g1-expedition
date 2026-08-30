@@ -11,40 +11,40 @@ Optimus Prime trained G1 for falls, lost
 footing, cliff descent, and blocked routes.
 
 4
-00:00:08,735 --> 00:00:10,190
+00:00:08,758 --> 00:00:10,132
 First: self-arrest.
 
 5
-00:00:10,627 --> 00:00:12,636
-In oblique falls up to five meters per
+00:00:10,372 --> 00:00:12,825
+G1 plants the axe and stops the slide.
 
 6
-00:00:12,671 --> 00:00:15,461
-second, G1 plants the axe and stops.
+00:00:13,112 --> 00:00:15,352
+One policy passed nine named and sixty
 
 7
-00:00:15,747 --> 00:00:18,336
-It passed nine named and sixty randomized fall
+00:00:15,387 --> 00:00:16,552
+randomized falls.
 
 8
-00:00:18,371 --> 00:00:19,000
-tests.
+00:00:16,735 --> 00:00:18,724
+Next: fall recovery on ice.
 
 9
-00:00:19,035 --> 00:00:20,502
-Next: fall recovery.
+00:00:19,010 --> 00:00:20,868
+The fixed line catches the slip and the
 
 10
-00:00:20,602 --> 00:00:23,028
-The safety line catches the slip, the controller
+00:00:20,903 --> 00:00:22,579
+controller regains stance.
 
 11
-00:00:23,063 --> 00:00:26,012
-regains stance, and a learned get-up returns G1
+00:00:22,818 --> 00:00:25,581
+A learned whole-body get-up also returns G1 to
 
 12
-00:00:26,047 --> 00:00:26,829
-to its feet.
+00:00:25,616 --> 00:00:27,466
+its feet after a full fall.
 
 13
 00:00:40,270 --> 00:00:42,359
@@ -95,13 +95,13 @@ log." After confirmation, the agent sends a
 gated start intent to the robot bridge.
 
 25
-00:01:24,235 --> 00:01:25,260
+00:01:24,035 --> 00:01:25,060
 Optimus Prime.
 
 26
-00:01:25,338 --> 00:01:26,723
+00:01:25,138 --> 00:01:26,523
 Local policies move;
 
 27
-00:01:26,824 --> 00:01:28,300
+00:01:26,624 --> 00:01:28,800
 LiveKit connects the team and operator.

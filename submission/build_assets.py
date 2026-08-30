@@ -442,6 +442,7 @@ def montage_overlay():
 
 save_title(); save_diagram(); save_ppo_training(); save_mappo_training(); save_evidence(); save_livekit_voice(); save_outro(); save_pitch_problem(); save_pitch_skills(); montage_overlay(); voice_demo_overlays()
 overlay("self","01  ICE-AXE SELF-ARREST","Stop an uncontrolled fall before the robot leaves the route","9/9 + 60/60",BLUE)
-overlay("fixed","02  FALL RECOVERY","Load the line, regain footing, continue the route","recover + continue",ORANGE)
+overlay("fixed","02  FALL RECOVERY ON ICE","Load the line, recover to standing, continue uphill","recover + continue",ORANGE)
+overlay("getup","02B  AUTONOMOUS GET-UP","Learned whole-body recovery returns G1 to a stable stand","29-DoF · 50 Hz",BLUE)
 overlay("rappel","03  CONTROLLED RAPPEL","Coordinate brake friction with stable foot placements","2.00 m descent",BLUE)
 overlay("team","04  COORDINATED LIFT","Clear a blocked approach without exceeding force limits","safe abort logic",ORANGE)
