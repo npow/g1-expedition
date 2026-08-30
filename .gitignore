@@ -120,3 +120,21 @@
 /runs/
 *.tmp
 *.log
+
+# Stage 2: induced slip / recovery, voice control, and evidence tooling.
+# NOTE this file is a WHITELIST -- `/*` ignores everything at root and each
+# path is re-admitted explicitly, so a new module is invisible to git until
+# listed here.
+!/slip_recovery_env.py
+!/evaluate_slip_recovery.py
+!/train_slip_recovery.py
+!/record_slip_recovery.py
+!/demo_live.py
+!/sim_bridge.py
+!/voice_agent.py
+!/SLIP_RECOVERY.md
+!/HANDOFF_STAGE2.md
+!/scripts/generate_rope_visual.py
+!/scripts/add_backpack.py
+!/docs/
+!/docs/**
