@@ -139,6 +139,119 @@ def save_diagram():
     im.save(OUT / "diagram.png")
 
 
+def save_ppo_training():
+    im = paper_bg(); d = ImageDraw.Draw(im, "RGBA"); technical_marks(d)
+    tx(d, (90, 112), "HOW SINGLE-ROBOT SKILLS LEARN", 61, fill=INK, bold=True, narrow=True)
+    tx(d, (94, 188), "MUJOCO  /  PPO  /  HIERARCHICAL CONTROL", 25, fill=ORANGE, bold=True)
+
+    # Two learned control stacks.
+    policy_cards = [
+        (82, 260, 900, BLUE, "SELF-ARREST PPO", "125-D OBSERVATION", "2 × 256 TANH", "14 ARM RESIDUALS", "100 Hz  ·  ≈200k actor+critic params"),
+        (1020, 260, 1838, ORANGE, "FIXED-LINE RECOVERY", "FALL + ROPE STATE", "2 × 256 TANH", "4-ACTION HANDOFF", "50 Hz  ·  pretrained 29-DoF WBC prior"),
+    ]
+    for x1, y1, x2, color, head, inp, net, out, footer in policy_cards:
+        d.rectangle((x1, y1, x2, 520), fill=WHITE + (246,), outline=INK + (255,), width=3)
+        d.rectangle((x1, y1, x2, y1+65), fill=color + (248,))
+        tx(d, (x1+25, y1+16), head, 28, fill=(INK if color == ORANGE else WHITE), bold=True, narrow=True)
+        boxes = [(x1+25, inp), (x1+292, net), (x1+559, out)]
+        for bx, label in boxes:
+            d.rounded_rectangle((bx, y1+105, bx+225, y1+182), radius=12, fill=INK + (248,))
+            tx(d, (bx+112, y1+143), label, 19, fill=WHITE, bold=True, anchor="mm")
+        arrow(d, x1+253, y1+143, x1+280, y1+143)
+        arrow(d, x1+520, y1+143, x1+547, y1+143)
+        tx(d, ((x1+x2)//2, y1+219), footer, 19, fill=ORANGE, bold=True, anchor="ma")
+
+    tx(d, (84, 572), "REWARD SHAPING  /  PHYSICS MUST EXPLAIN SUCCESS", 24, fill=ORANGE, bold=True)
+    rewards = [
+        (82, 620, 590, "01  TOOL CONTACT", "rigid pick contact\nblade 22–42° · snow load"),
+        (706, 620, 1214, "02  BODY CONTROL", "chest-down pose · grip\nwrists stay ahead of torso"),
+        (1330, 620, 1838, "03  TERMINAL GATES", "no passive stop\nstable stand earns success"),
+    ]
+    for x1, y1, x2, head, detail in rewards:
+        d.rectangle((x1, y1, x2, 798), fill=INK + (246,), outline=ORANGE + (255,), width=3)
+        tx(d, (x1+24, y1+23), head, 23, fill=ORANGE, bold=True, narrow=True)
+        tx(d, (x1+24, y1+73), detail, 21, fill=WHITE, bold=True, spacing=7)
+
+    tx(d, (84, 847), "CURRICULUM", 23, fill=ORANGE, bold=True)
+    d.rounded_rectangle((82, 895, 1838, 1005), radius=18, fill=INK + (248,))
+    stages = [
+        (190, "0.25–0.75 m/s", "START EASY"),
+        (490, "→ 5.0 m/s", "SPEED"),
+        (835, "±40° / ±1.5 m/s", "HEADING + CROSS-SLOPE"),
+        (1280, "HARD ANCHORS", "ROLL + ADVERSARIAL FALLS"),
+        (1640, "9/9 + 60/60", "FROZEN SELECTION"),
+    ]
+    for i, (x, big, small) in enumerate(stages):
+        tx(d, (x, 920), big, 23, fill=(ORANGE if i in (0, 4) else WHITE), bold=True, anchor="ma")
+        tx(d, (x, 961), small, 15, fill=(WHITE if i in (0, 4) else ORANGE), bold=True, anchor="ma")
+        if i < len(stages)-1:
+            arrow(d, x+135, 950, stages[i+1][0]-145, 950)
+    im.save(OUT / "ppo_training.png")
+
+
+def save_mappo_training():
+    im = paper_bg(); d = ImageDraw.Draw(im, "RGBA"); technical_marks(d)
+    tx(d, (90, 112), "HOW THE TEAM POLICY LEARNS", 63, fill=INK, bold=True, narrow=True)
+    tx(d, (94, 188), "ISAAC LAB  /  SHARED MAPPO  /  CENTRALIZED TRAINING", 25, fill=ORANGE, bold=True)
+
+    # Actor path at deployment.
+    d.rectangle((82, 255, 1838, 520), fill=WHITE + (246,), outline=INK + (255,), width=3)
+    d.rectangle((82, 255, 1838, 320), fill=BLUE + (248,))
+    tx(d, (112, 272), "SHARED ATTENTION ACTOR  /  SAME WEIGHTS ON EVERY G1", 28, fill=WHITE, bold=True, narrow=True)
+    actor_boxes = [
+        (112, 365, 395, "INPUT", "98 local features\n+ 7-D token / teammate"),
+        (500, 350, 1000, "≈210k-PARAM ACTOR", "256→128 local encoder\n128-D · 4-head attention"),
+        (1110, 365, 1425, "10 COMMANDS / G1", "vx · vy · yaw · hip\n3-D wrist × 2"),
+        (1530, 365, 1808, "FROZEN AGILE", "whole-body state\n→ 12 leg targets"),
+    ]
+    for x1, y1, x2, head, detail in actor_boxes:
+        d.rounded_rectangle((x1, y1, x2, 490), radius=13, fill=(ORANGE if "210k" in head else INK) + (248,), outline=INK + (255,), width=2)
+        tx(d, ((x1+x2)//2, y1+24), head, 21, fill=(INK if "210k" in head else WHITE), bold=True, narrow=True, anchor="ma")
+        tx(d, ((x1+x2)//2, y1+66), detail, 17, fill=(INK if "210k" in head else ORANGE), bold=True, anchor="ma", spacing=4)
+    arrow(d, 410, 425, 475, 425)
+    arrow(d, 1015, 425, 1085, 425)
+    arrow(d, 1440, 425, 1505, 425)
+
+    # Central critic is training-only.
+    d.rectangle((82, 565, 1838, 675), fill=INK + (248,), outline=ORANGE + (255,), width=3)
+    tx(d, (112, 588), "TRAINING-ONLY CENTRAL CRITIC", 24, fill=ORANGE, bold=True, narrow=True)
+    tx(d, (535, 587), "TEAM STATE + PAYLOAD MASS", 21, fill=WHITE, bold=True)
+    arrow(d, 870, 622, 980, 622)
+    tx(d, (1025, 587), "768 → 512 → 256", 25, fill=WHITE, bold=True, narrow=True)
+    tx(d, (1450, 578), "ACTOR: LOCAL + TOKENS ONLY\nAT INFERENCE", 16, fill=ORANGE, bold=True, spacing=3)
+    tx(d, (112, 640), "MAPPO: 24-step rollouts  ·  5 epochs  ·  γ .99  ·  GAE .95  ·  clip .2  ·  lr 3e−4", 18, fill=WHITE, bold=True)
+
+    tx(d, (84, 720), "SHARED TEAM REWARD", 23, fill=ORANGE, bold=True)
+    reward_boxes = [
+        (82, 277, "+  TRACK"),
+        (292, 487, "+  LEVEL"),
+        (502, 712, "+  HEADING"),
+        (727, 1002, "+  LOAD BALANCE"),
+        (1017, 1227, "+  UPRIGHT"),
+        (1242, 1502, "+  LIFT PROGRESS"),
+    ]
+    for x1, x2, label in reward_boxes:
+        d.rounded_rectangle((x1, 768, x2, 830), radius=12, fill=BLUE + (245,))
+        tx(d, ((x1+x2)//2, 799), label, 17, fill=WHITE, bold=True, anchor="mm")
+    d.rounded_rectangle((1517, 768, 1838, 830), radius=12, fill=ORANGE + (245,))
+    tx(d, (1677, 799), "−  EXTENSION / RATE / FALL", 16, fill=INK, bold=True, anchor="mm")
+
+    tx(d, (84, 875), "CURRICULUM", 23, fill=ORANGE, bold=True)
+    d.rounded_rectangle((82, 915, 1838, 1007), radius=16, fill=INK + (248,))
+    curriculum = [
+        (190, "LIFT + LEVEL", "0–24k steps"),
+        (650, "ADD CARRY + TURN", "24k→150k"),
+        (1200, "MASS 8→18 kg", "by 180k"),
+        (1655, "2 / 3 / 5 G1", "shared actor"),
+    ]
+    for i, (cx, big, small) in enumerate(curriculum):
+        tx(d, (cx, 935), big, 22, fill=(ORANGE if i in (0, 3) else WHITE), bold=True, anchor="ma")
+        tx(d, (cx, 970), small, 16, fill=(WHITE if i in (0, 3) else ORANGE), bold=True, anchor="ma")
+        if i < len(curriculum)-1:
+            arrow(d, cx+145, 962, curriculum[i+1][0]-155, 962)
+    im.save(OUT / "mappo_training.png")
+
+
 def save_evidence():
     im = paper_bg(); d = ImageDraw.Draw(im, "RGBA"); technical_marks(d)
     tx(d, (90, 115), "WHAT WE MEASURED", 66, fill=INK, bold=True, narrow=True)
@@ -327,8 +440,9 @@ def montage_overlay():
     im.save(OUT/"overlay_montage.png")
 
 
-save_title(); save_diagram(); save_evidence(); save_livekit_voice(); save_outro(); save_pitch_problem(); save_pitch_skills(); montage_overlay(); voice_demo_overlays()
+save_title(); save_diagram(); save_ppo_training(); save_mappo_training(); save_evidence(); save_livekit_voice(); save_outro(); save_pitch_problem(); save_pitch_skills(); montage_overlay(); voice_demo_overlays()
 overlay("self","01  ICE-AXE SELF-ARREST","Stop an uncontrolled fall before the robot leaves the route","9/9 + 60/60",BLUE)
-overlay("fixed","02  FALL RECOVERY","Load the line, regain footing, continue the route","recover + continue",ORANGE)
+overlay("fixed","02  FALL RECOVERY ON ICE","Load the line, recover to standing, continue uphill","recover + continue",ORANGE)
+overlay("getup","02B  AUTONOMOUS GET-UP","Learned whole-body recovery returns G1 to a stable stand","29-DoF · 50 Hz",BLUE)
 overlay("rappel","03  CONTROLLED RAPPEL","Coordinate brake friction with stable foot placements","2.00 m descent",BLUE)
 overlay("team","04  COORDINATED LIFT","Clear a blocked approach without exceeding force limits","safe abort logic",ORANGE)

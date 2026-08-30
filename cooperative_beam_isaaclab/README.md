@@ -99,6 +99,18 @@ This follows the hackathon's official
 [LiveKit robotics guidance](https://www.livekit.info/himalaya-robotics-hack): WebRTC transport for robot telemetry,
 remote inference, operator video, and voice, without direct VPN or port-forwarding dependencies.
 
+## Voice incident commander
+
+The ElevenLabs voice agent reads these same state tracks and exposes grounded team-status, load, and link-health
+tools. Its deterministic boundary admits only `start`, `hold`, `resume`, and `abort`. Start and resume require an
+exact confirmation utterance within 15 seconds, fresh complete telemetry, a valid mission phase, and acceptable
+load distribution. Hold and abort remain available when telemetry is stale. During an active mission, a background
+watchdog broadcasts abort when the 150 ms state deadline is exceeded; incomplete non-abort RPC delivery also
+transitions the commander to aborted.
+
+For setup, a credential-free demo, the live-room command topology, and the judge sequence, see
+[the voice incident commander guide](../VOICE_INCIDENT_COMMANDER.md).
+
 ## Local setup and validation
 
 The tested installation on Odin is:
@@ -329,6 +341,8 @@ scripts/
   train.py                      wrapper around Isaac Lab's maintained skrl trainer
   evaluate.py                   finite frozen-policy evaluation and JSON metrics
   livekit_state_bridge.py       deployed LiveKit transport beside one G1 actor
+  voice_incident_commander.py   ElevenLabs voice agent and continuous safety watchdog
+  incident_commander_console.py credential-free, labelled telemetry-fixture demo
   run_local.sh                  local MAPPO launch
   hf_job.sh                     iteration-controlled Hugging Face Jobs launch
   hf_eval_job.sh                remote frozen-policy evaluation launch
@@ -337,4 +351,6 @@ scripts/
 tests/
   test_trajectory.py            trajectory and reward invariants
   test_livekit_state_bus.py     packet, ordering, frame transform, stale-state tests
+  test_incident_commander.py    command phase, confirmation, load, and freshness gates
+  test_voice_incident_commander.py voice RPC and continuous-watchdog integration
 ```
