@@ -25,7 +25,7 @@ if not API_KEY:
 # choice to the account, e.g. ELEVEN_VOICE_ID=... zsh build_video.sh.
 VOICE_ID = os.environ.get("ELEVEN_VOICE_ID", "JBFqnCBsd6RMkjVDRZzb")
 MODEL_ID = "eleven_multilingual_v2"
-VIDEO_DURATION = float(os.environ.get("VIDEO_DURATION", "77"))
+VIDEO_DURATION = float(os.environ.get("VIDEO_DURATION", "80"))
 STARTS = [0.4, 8.7, 16.7, 27.5, 31.7, 40.2, 49.2, 61.5]
 PARAGRAPHS = [p.strip() for p in (ROOT / "narration.txt").read_text().split("\n\n") if p.strip()]
 if len(PARAGRAPHS) != len(STARTS):
