@@ -5,7 +5,7 @@ deck, and every local source needed to edit or regenerate them.
 
 ## Final deliverables
 
-- `optimus_prime_g1_expedition_2min.mp4` — 89 seconds, 1080p H.264,
+- `optimus_prime_g1_expedition_2min.mp4` — 82 seconds, 1080p H.264,
   AAC voiceover, burned-in captions
 - `optimus_prime_g1_expedition_2min.srt` — separate subtitle track
 - `optimus_prime_pitch_90s.pptx` and `.pdf` — six-slide mountain-themed pitch
@@ -21,10 +21,10 @@ deck, and every local source needed to edit or regenerate them.
 | 0:08.5–0:16.5 | One hard self-arrest plus evaluation results |
 | 0:16.5–0:29.5 | Fixed-line catch, fall recovery on ice, and resumed ascent |
 | 0:29.5–0:40 | Standalone learned whole-body get-up |
-| 0:40–0:56 | Controlled rappel |
-| 0:56–1:04 | Overload refusal, beginning directly on the action |
-| 1:04–1:24 | Cooperative lift and LiveKit telemetry/voice control |
-| 1:24–1:29 | Closing card |
+| 0:40–0:49 | Controlled rappel: brake control plus one foot-placement sequence |
+| 0:49–0:57 | Overload refusal, beginning directly on the action |
+| 0:57–1:17 | Cooperative lift and LiveKit telemetry/voice control |
+| 1:17–1:22 | Closing card |
 
 The pitch carries the problem, extreme-condition motivation, technical
 architecture, and quantified evidence. The demo stays below the two-minute

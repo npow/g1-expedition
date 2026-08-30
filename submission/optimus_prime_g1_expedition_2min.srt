@@ -63,45 +63,45 @@ sixty-five-degree face, descending two meters
 while maintaining brake tension.
 
 17
-00:00:56,246 --> 00:00:58,166
+00:00:49,246 --> 00:00:51,166
 A fallen tree can block the route.
 
 18
-00:00:58,348 --> 00:01:00,256
+00:00:51,348 --> 00:00:53,256
 One robot rejects an overload.
 
 19
-00:01:00,542 --> 00:01:03,305
+00:00:53,542 --> 00:00:56,305
 At a safe mass, two G1s share tension,
 
 20
-00:01:03,340 --> 00:01:05,225
+00:00:56,340 --> 00:00:58,225
 lift, lower, and retreat together.
 
 21
-00:01:08,546 --> 00:01:10,594
+00:01:01,546 --> 00:01:03,594
 LiveKit carries state and voice.
 
 22
-00:01:10,671 --> 00:01:12,563
+00:01:03,671 --> 00:01:05,563
 Ask for the load, or say "move the
 
 23
-00:01:12,598 --> 00:01:15,443
+00:01:05,598 --> 00:01:08,443
 log." After confirmation, the agent sends a
 
 24
-00:01:15,478 --> 00:01:17,908
+00:01:08,478 --> 00:01:10,908
 gated start intent to the robot bridge.
 
 25
-00:01:24,035 --> 00:01:25,060
+00:01:17,035 --> 00:01:18,060
 Optimus Prime.
 
 26
-00:01:25,138 --> 00:01:26,523
+00:01:18,138 --> 00:01:19,523
 Local policies move;
 
 27
-00:01:26,624 --> 00:01:28,800
+00:01:19,624 --> 00:01:21,800
 LiveKit connects the team and operator.

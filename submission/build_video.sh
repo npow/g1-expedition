@@ -9,7 +9,7 @@ mkdir -p build/segments build/audio build/contact_sheets
 python3 build_assets.py
 
 enc=(-c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p -r 30 -an)
-final_duration=89
+final_duration=82
 
 ffmpeg -hide_banner -loglevel error -loop 1 -i build/cards/title.png -t 3.5 \
   -vf "fps=30,fade=t=out:st=3.15:d=0.35" \
@@ -34,8 +34,8 @@ ffmpeg -hide_banner -loglevel error -i source_videos/g1_fixed_line_fall_recovery
   -map "[out]" -t 23.5 "${enc[@]}" build/segments/05_fixed.mp4 -y
 
 ffmpeg -hide_banner -loglevel error -i source_videos/g1_rappel_long.mp4 -i source_videos/g1_rappel_footplant_full_preview.mp4 -loop 1 -i build/cards/overlay_rappel.png \
-  -filter_complex "[0:v]trim=start=0:end=12,setpts=PTS-STARTPTS,scale=1920:1080,fps=30[a];[1:v]trim=start=0.4:end=4.4,setpts=PTS-STARTPTS,scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=30[b];[a][b]concat=n=2:v=1:a=0[base];[base][2:v]overlay=0:0:shortest=1,fade=t=in:st=0:d=0.3,fade=t=out:st=15.65:d=0.35[out]" \
-  -map "[out]" -t 16 "${enc[@]}" build/segments/06_rappel.mp4 -y
+  -filter_complex "[0:v]trim=start=0:end=6.5,setpts=PTS-STARTPTS,scale=1920:1080,fps=30[a];[1:v]trim=start=0.4:end=2.9,setpts=PTS-STARTPTS,scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=30[b];[a][b]concat=n=2:v=1:a=0[base];[base][2:v]overlay=0:0:shortest=1,fade=t=in:st=0:d=0.3,fade=t=out:st=8.65:d=0.35[out]" \
+  -map "[out]" -t 9 "${enc[@]}" build/segments/06_rappel.mp4 -y
 
 ffmpeg -hide_banner -loglevel error -i source_videos/tree.mp4 -i source_videos/lifting_log.mp4 -i source_videos/failure.mp4 \
   -loop 1 -i build/cards/overlay_team.png -loop 1 -i build/cards/overlay_voice_1.png \
@@ -70,7 +70,7 @@ ffmpeg -hide_banner -loglevel error \
   -i build/audio/narration_5.mp3 -i build/audio/narration_6.mp3 \
   -i build/audio/narration_7.mp3 \
   -f lavfi -i "aevalsrc=0.025*(sin(2*PI*55*t)+0.55*sin(2*PI*82.41*t)+0.35*sin(2*PI*110*t)):s=48000:d=$final_duration" \
-  -filter_complex "[0:a]adelay=400,volume=1.0[a0];[1:a]adelay=8700,volume=1.0[a1];[2:a]adelay=16700,volume=1.0[a2];[3:a]adelay=40200,volume=1.0[a3];[4:a]adelay=56200,volume=1.0[a4];[5:a]adelay=68500,volume=1.0[a5];[6:a]adelay=84000,volume=1.0[a6];[7:a]lowpass=f=420,afade=t=in:st=0:d=3,afade=t=out:st=85:d=4,volume=0.10[bed];[a0][a1][a2][a3][a4][a5][a6][bed]amix=inputs=8:duration=longest:normalize=0,loudnorm=I=-16:LRA=8:TP=-1.5,atrim=duration=${final_duration}[aout]" \
+  -filter_complex "[0:a]adelay=400,volume=1.0[a0];[1:a]adelay=8700,volume=1.0[a1];[2:a]adelay=16700,volume=1.0[a2];[3:a]adelay=40200,volume=1.0[a3];[4:a]adelay=49200,volume=1.0[a4];[5:a]adelay=61500,volume=1.0[a5];[6:a]adelay=77000,volume=1.0[a6];[7:a]lowpass=f=420,afade=t=in:st=0:d=3,afade=t=out:st=78:d=4,volume=0.10[bed];[a0][a1][a2][a3][a4][a5][a6][bed]amix=inputs=8:duration=longest:normalize=0,loudnorm=I=-16:LRA=8:TP=-1.5,atrim=duration=${final_duration}[aout]" \
   -map "[aout]" -c:a aac -b:a 192k -ar 48000 -ac 2 build/soundtrack.m4a -y
 
 ffmpeg -hide_banner -loglevel error -i build/picture_captioned.mp4 -i build/soundtrack.m4a \
