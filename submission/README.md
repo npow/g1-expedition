@@ -8,8 +8,11 @@ deck, and every local source needed to edit or regenerate them.
 - `optimus_prime_g1_expedition_2min.mp4` — 82 seconds, 1080p H.264,
   AAC voiceover, burned-in captions
 - `optimus_prime_g1_expedition_2min.srt` — separate subtitle track
-- `optimus_prime_pitch_90s.pptx` and `.pdf` — six-slide mountain-themed pitch
-- `pitch_script_90s.md` — timed speaker script matching the deck notes
+- `optimus_prime_pitch_90s.pptx` and `.pdf` — simplified six-slide pitch
+- `optimus_prime_pitch_90s_detailed.pptx` and `.pdf` — technical version
+- `optimus_prime_pitch_slide_options.pptx` and `.pdf` — each detailed slide
+  followed by its simplified alternative
+- `pitch_script_90s.md` and `pitch_script_90s_detailed.md` — matching scripts
 - `optimus_prime_project_cover.png` — 16:9 cover with all four skills and team name
 
 ## Demo structure
@@ -46,6 +49,9 @@ windows, renders captions, creates the voiceover, and writes the final MP4.
 The selected clips are retained under `source_videos/`; edit the FFmpeg trim
 windows in the script to change the cut.
 
+To audition another ElevenLabs voice after adding it to My Voices, rebuild with
+`ELEVEN_VOICE_ID=<voice-id> zsh build_video.sh`. The default remains George.
+
 ## Rebuild the pitch deck
 
 Requirements: Python 3 with Pillow, Node.js/npm, and optionally LibreOffice for
@@ -59,8 +65,10 @@ node build_pitch_deck.js
 
 mkdir -p build/pitch_render
 soffice --headless --convert-to pdf \
-  --outdir build/pitch_render optimus_prime_pitch_90s.pptx
-cp build/pitch_render/optimus_prime_pitch_90s.pdf .
+  --outdir build/pitch_render optimus_prime_pitch_90s*.pptx
+soffice --headless --convert-to pdf \
+  --outdir build/pitch_render optimus_prime_pitch_slide_options.pptx
+cp build/pitch_render/*.pdf .
 ```
 
 Edit `build_assets.py` for visual content, `build_pitch_deck.js` for slide

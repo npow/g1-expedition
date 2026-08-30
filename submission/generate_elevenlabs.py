@@ -21,8 +21,9 @@ API_KEY = os.environ.get("ELEVEN_API_KEY")
 if not API_KEY:
     raise SystemExit("ELEVEN_API_KEY is not visible to the process")
 
-# George is the official public voice used by ElevenLabs in its API example.
-VOICE_ID = "JBFqnCBsd6RMkjVDRZzb"
+# George is the default public voice; override after adding a Voice Library
+# choice to the account, e.g. ELEVEN_VOICE_ID=... zsh build_video.sh.
+VOICE_ID = os.environ.get("ELEVEN_VOICE_ID", "JBFqnCBsd6RMkjVDRZzb")
 MODEL_ID = "eleven_multilingual_v2"
 VIDEO_DURATION = float(os.environ.get("VIDEO_DURATION", "82"))
 STARTS = [0.4, 8.7, 16.7, 40.2, 49.2, 61.5, 77.0]
