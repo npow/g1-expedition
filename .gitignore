@@ -74,6 +74,10 @@
 /cooperative_beam_isaaclab/.ruff_cache/
 /cooperative_beam_isaaclab/src/*.egg-info/
 
+# Independent MuJoCo coordinated-lift scenario.
+!/mountain-robotics/
+!/mountain-robotics/**
+
 # Never commit generated/runtime state if the whitelist expands later.
 **/.venv/
 **/__pycache__/
