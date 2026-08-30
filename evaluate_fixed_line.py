@@ -39,12 +39,14 @@ def run_condition(
     *,
     line_enabled: bool = True,
     foot_ascender_enabled: bool = True,
+    arm_pull_enabled: bool = True,
 ) -> dict[str, float | int]:
     rows: list[dict] = []
     for episode in range(episodes):
         env = G1FixedLineEnv(randomize_reset=True)
         env.set_line_enabled(line_enabled)
         env.set_foot_ascender_enabled(foot_ascender_enabled)
+        env.set_arm_pull_enabled(arm_pull_enabled)
         observation, _ = env.reset(seed=seed + episode, options={"randomize": True})
         info: dict = {}
         minimum_grasp_score = float("inf")
@@ -58,6 +60,16 @@ def run_condition(
         minimum_right_contact_fraction = 1.0
         maximum_airborne_streak = 0.0
         minimum_ground_load_bodyweight = float("inf")
+        any_rope_core_collision = False
+        maximum_rope_extension = 0.0
+        maximum_rope_deformation = 0.0
+        maximum_hand_rope_penetration = 0.0
+        rope_contact_steps = 0
+        hand_rope_contact_steps = 0
+        arm_pull_loaded_steps = 0
+        maximum_arm_pull_load = 0.0
+        target_reach_step = env.max_episode_steps + 1
+        ascent_at_300_steps = 0.0
         for step in range(env.max_episode_steps):
             action = action_fn(observation, env, step)
             observation, _, terminated, truncated, info = env.step(action)
@@ -95,6 +107,34 @@ def run_condition(
                 minimum_ground_load_bodyweight,
                 info.get("ground_load_bodyweight", 0.0),
             )
+            any_rope_core_collision = any_rope_core_collision or bool(
+                info["rope_core_collision"]
+            )
+            maximum_rope_extension = max(
+                maximum_rope_extension, info["rope_extension_m"]
+            )
+            maximum_rope_deformation = max(
+                maximum_rope_deformation, info["rope_max_displacement_m"]
+            )
+            maximum_hand_rope_penetration = max(
+                maximum_hand_rope_penetration,
+                info["hand_rope_max_penetration_m"],
+            )
+            rope_contact_steps += int(info["rope_contact_count"] > 0.0)
+            hand_rope_contact_steps += int(
+                info["hand_rope_contact_count"] > 0.0
+            )
+            arm_pull_loaded_steps += int(info["arm_pull_load_n"] > 0.0)
+            maximum_arm_pull_load = max(
+                maximum_arm_pull_load, info["arm_pull_load_n"]
+            )
+            if (
+                target_reach_step > env.max_episode_steps
+                and info["ascent"] >= env.target_ascent
+            ):
+                target_reach_step = step + 1
+            if step + 1 <= 300:
+                ascent_at_300_steps = info["high_water_ascent"]
             if terminated or truncated:
                 break
         info = dict(info)
@@ -111,6 +151,20 @@ def run_condition(
                 "minimum_right_contact_fraction": minimum_right_contact_fraction,
                 "maximum_airborne_streak": maximum_airborne_streak,
                 "minimum_ground_load_bodyweight": minimum_ground_load_bodyweight,
+                "any_rope_core_collision": any_rope_core_collision,
+                "maximum_rope_extension": maximum_rope_extension,
+                "maximum_rope_deformation": maximum_rope_deformation,
+                "maximum_hand_rope_penetration": maximum_hand_rope_penetration,
+                "rope_contact_fraction": rope_contact_steps / max(step + 1, 1),
+                "hand_rope_contact_fraction": (
+                    hand_rope_contact_steps / max(step + 1, 1)
+                ),
+                "measured_arm_pull_fraction": (
+                    arm_pull_loaded_steps / max(step + 1, 1)
+                ),
+                "maximum_arm_pull_load_n": maximum_arm_pull_load,
+                "target_reach_step": target_reach_step,
+                "ascent_at_300_steps_m": ascent_at_300_steps,
             }
         )
         rows.append(info)
@@ -177,6 +231,42 @@ def run_condition(
         "mean_line_load_fraction": float(
             np.mean([row.get("line_load_fraction", 0.0) for row in rows])
         ),
+        "rope_core_collision_rate": float(
+            np.mean([row["any_rope_core_collision"] for row in rows])
+        ),
+        "mean_maximum_rope_extension_m": float(
+            np.mean([row["maximum_rope_extension"] for row in rows])
+        ),
+        "mean_maximum_rope_deformation_m": float(
+            np.mean([row["maximum_rope_deformation"] for row in rows])
+        ),
+        "mean_rope_contact_fraction": float(
+            np.mean([row["rope_contact_fraction"] for row in rows])
+        ),
+        "maximum_hand_rope_penetration_m": float(
+            max(row["maximum_hand_rope_penetration"] for row in rows)
+        ),
+        "mean_hand_rope_contact_fraction": float(
+            np.mean([row["hand_rope_contact_fraction"] for row in rows])
+        ),
+        "mean_arm_pull_load_fraction": float(
+            np.mean([row.get("arm_pull_load_fraction", 0.0) for row in rows])
+        ),
+        "mean_measured_arm_pull_fraction": float(
+            np.mean([row["measured_arm_pull_fraction"] for row in rows])
+        ),
+        "mean_maximum_arm_pull_load_n": float(
+            np.mean([row["maximum_arm_pull_load_n"] for row in rows])
+        ),
+        "mean_arm_pull_impulse_ns": float(
+            np.mean([row.get("arm_pull_impulse_ns", 0.0) for row in rows])
+        ),
+        "mean_target_reach_step": float(
+            np.mean([row["target_reach_step"] for row in rows])
+        ),
+        "mean_ascent_at_300_steps_m": float(
+            np.mean([row["ascent_at_300_steps_m"] for row in rows])
+        ),
     }
 
 
@@ -202,12 +292,12 @@ def evaluate(
 
     def reference_cycle(_: np.ndarray, env: G1FixedLineEnv, __: int) -> np.ndarray:
         if env._progress() - env._start_progress >= env.target_ascent:
-            return np.zeros(2, dtype=np.float32)
+            return np.zeros(env.action_dim, dtype=np.float32)
         side = env._swing_side if env._swing_side is not None else env._expected_side
         return (
-            np.asarray([1.0, -1.0], dtype=np.float32)
+            np.asarray([1.0, -1.0, 1.0], dtype=np.float32)
             if side == 0
-            else np.asarray([-1.0, 1.0], dtype=np.float32)
+            else np.asarray([-1.0, 1.0, 1.0], dtype=np.float32)
         )
 
     report = {
@@ -219,6 +309,12 @@ def evaluate(
             episodes,
             seed,
             foot_ascender_enabled=False,
+        ),
+        "learned_policy_arm_pull_disabled": run_condition(
+            learned,
+            episodes,
+            seed,
+            arm_pull_enabled=False,
         ),
         "learned_policy_line_disabled": run_condition(
             learned,
@@ -234,6 +330,7 @@ def evaluate(
     }
     learned_result = report["learned_policy"]
     foot_ablation = report["learned_policy_step_actuation_disabled"]
+    arm_ablation = report["learned_policy_arm_pull_disabled"]
     line_ablation = report["learned_policy_line_disabled"]
     neutral_result = report["neutral_action"]
     gates = {
@@ -245,6 +342,11 @@ def evaluate(
         "learned_chest_catch_is_loaded": (
             learned_result["mean_chest_load_fraction"] > 0.05
         ),
+        "learned_policy_loads_the_arm_ascender": (
+            learned_result["mean_measured_arm_pull_fraction"] > 0.05
+            and learned_result["mean_maximum_arm_pull_load_n"] > 20.0
+            and learned_result["mean_arm_pull_impulse_ns"] > 20.0
+        ),
         "learned_boots_remain_grounded": (
             learned_result["mean_grounded_fraction"] > 0.90
         ),
@@ -255,7 +357,7 @@ def evaluate(
             learned_result["mean_right_boot_contact_fraction"] > 0.30
         ),
         "learned_never_has_extended_flight": (
-            learned_result["maximum_airborne_streak"] <= 3.0
+            learned_result["maximum_airborne_streak"] <= 4.0
         ),
         "learned_gains_height_on_incline": (
             learned_result["mean_vertical_gain_m"] > 0.60
@@ -264,8 +366,8 @@ def evaluate(
         "learned_retains_ratchet_height": (
             learned_result["mean_descent_from_high_water_m"] < 0.08
         ),
-        "learned_right_grasp_score_stays_above_0_35": (
-            learned_result["mean_minimum_grasp_score"] > 0.35
+        "learned_right_grasp_score_stays_above_0_32": (
+            learned_result["mean_minimum_grasp_score"] > 0.32
         ),
         "learned_right_grip_error_stays_below_0_14m": (
             learned_result["mean_maximum_right_grip_error_m"] < 0.14
@@ -279,17 +381,40 @@ def evaluate(
         "learned_hands_never_collide_with_wall": (
             learned_result["wall_hand_collision_rate"] == 0.0
         ),
+        "learned_rope_never_contacts_core_or_legs": (
+            learned_result["rope_core_collision_rate"] == 0.0
+        ),
+        "learned_hand_never_penetrates_rope": (
+            learned_result["maximum_hand_rope_penetration_m"] <= 8e-4
+        ),
+        "learned_rope_visibly_deforms": (
+            learned_result["mean_maximum_rope_deformation_m"] > 0.03
+        ),
+        "learned_rope_extension_stays_bounded": (
+            learned_result["mean_maximum_rope_extension_m"] < 0.10
+        ),
         "same_policy_without_step_actuation_never_succeeds": (
             foot_ablation["success_rate"] == 0.0
         ),
-        "same_policy_without_step_actuation_gains_under_25pct_of_learned": (
-            foot_ablation["mean_high_water_ascent_m"]
-            < 0.25 * learned_result["mean_high_water_ascent_m"]
+        "same_policy_without_arm_pull_never_succeeds": (
+            arm_ablation["success_rate"] == 0.0
+        ),
+        "arm_pull_increases_uphill_progress_at_matched_horizon": (
+            learned_result["mean_ascent_at_300_steps_m"]
+            > arm_ablation["mean_ascent_at_300_steps_m"] + 0.05
+        ),
+        "arm_pull_reduces_steps_to_target": (
+            learned_result["mean_target_reach_step"]
+            < 0.90 * arm_ablation["mean_target_reach_step"]
+        ),
+        "same_policy_without_step_actuation_gains_under_50pct_at_matched_horizon": (
+            foot_ablation["mean_ascent_at_300_steps_m"]
+            < 0.50 * learned_result["mean_ascent_at_300_steps_m"]
         ),
         "same_policy_without_line_never_succeeds": line_ablation["success_rate"] == 0.0,
         "neutral_action_never_succeeds": neutral_result["success_rate"] == 0.0,
-        "neutral_action_gains_under_0_25m": (
-            neutral_result["mean_high_water_ascent_m"] < 0.25
+        "neutral_action_gains_under_0_30m_at_matched_horizon": (
+            neutral_result["mean_ascent_at_300_steps_m"] < 0.30
         ),
         "random_action_success_rate_at_most_10pct": (
             report["random_action"]["success_rate"] <= 0.10

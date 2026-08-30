@@ -33,7 +33,7 @@ def record_policy_demo(
     env = G1FixedLineEnv(render_mode="rgb_array", randomize_reset=False)
     observation, _ = env.reset(seed=seed, options={"randomize": False})
     renderer = mujoco.Renderer(env.model, height=720, width=1280)
-    equipment_renderer = mujoco.Renderer(env.model, height=260, width=430)
+    equipment_renderer = mujoco.Renderer(env.model, height=300, width=500)
 
     camera = mujoco.MjvCamera()
     camera.type = mujoco.mjtCamera.mjCAMERA_TRACKING
@@ -43,15 +43,17 @@ def record_policy_demo(
     camera.elevation = -7
     close_camera = mujoco.MjvCamera()
     close_camera.type = mujoco.mjtCamera.mjCAMERA_FREE
-    close_camera.distance = 0.95
-    close_camera.azimuth = 92
+    close_camera.distance = 0.60
+    close_camera.azimuth = 35
     close_camera.elevation = -5
     main_backdrop = alpine_backdrop(1280, 720)
-    inset_backdrop = alpine_backdrop(430, 260)
+    inset_backdrop = alpine_backdrop(500, 300)
 
     actions: list[list[float]] = []
     heights: list[float] = []
     chest_forces: list[float] = []
+    rope_guide_forces: list[float] = []
+    arm_pull_forces: list[float] = []
     ground_forces: list[float] = []
     grounded_fractions: list[float] = []
     left_contact_fractions: list[float] = []
@@ -62,6 +64,12 @@ def record_policy_demo(
     hand_separations: list[float] = []
     cross_hand_collisions: list[float] = []
     wall_hand_collisions: list[float] = []
+    rope_extensions: list[float] = []
+    rope_deformations: list[float] = []
+    rope_contacts: list[float] = []
+    rope_core_collisions: list[float] = []
+    hand_rope_contacts: list[float] = []
+    hand_rope_penetrations: list[float] = []
     final_info: dict = {}
     snapshots: dict[str, np.ndarray] = {}
     frame_count = 0
@@ -74,6 +82,8 @@ def record_policy_demo(
             actions.append(np.asarray(action).tolist())
             heights.append(float(final_info["ascent"]))
             chest_forces.append(float(final_info["line_load_n"]))
+            rope_guide_forces.append(float(final_info["rope_guide_load_n"]))
+            arm_pull_forces.append(float(final_info["arm_pull_load_n"]))
             ground_forces.append(float(final_info["ground_load_n"]))
             grounded_fractions.append(float(final_info["grounded_fraction"]))
             left_contact_fractions.append(
@@ -88,14 +98,28 @@ def record_policy_demo(
             hand_separations.append(float(final_info["hand_separation"]))
             cross_hand_collisions.append(float(final_info["cross_hand_collision"]))
             wall_hand_collisions.append(float(final_info["wall_hand_collision"]))
+            rope_extensions.append(float(final_info["rope_extension_m"]))
+            rope_deformations.append(float(final_info["rope_max_displacement_m"]))
+            rope_contacts.append(float(final_info["rope_contact_count"]))
+            rope_core_collisions.append(float(final_info["rope_core_collision"]))
+            hand_rope_contacts.append(
+                float(final_info["hand_rope_contact_count"])
+            )
+            hand_rope_penetrations.append(
+                float(final_info["hand_rope_max_penetration_m"])
+            )
 
             frame = render_with_alpine_backdrop(
-                renderer, env.data, camera, main_backdrop
+                renderer, env.model, env.data, camera, main_backdrop
             )
             _chest_device, hand_device = env._device_points()
             close_camera.lookat[:] = hand_device
             close_frame = render_with_alpine_backdrop(
-                equipment_renderer, env.data, close_camera, inset_backdrop
+                equipment_renderer,
+                env.model,
+                env.data,
+                close_camera,
+                inset_backdrop,
             )
             inset_y, inset_x = 18, 18
             inset_h, inset_w = close_frame.shape[:2]
@@ -163,6 +187,17 @@ def record_policy_demo(
         ),
         "vertical_gain_m": float(final_info.get("vertical_gain_m", 0.0)),
         "peak_line_load_n": float(max(chest_forces, default=0.0)),
+        "peak_rope_guide_load_n": float(max(rope_guide_forces, default=0.0)),
+        "peak_arm_pull_load_n": float(max(arm_pull_forces, default=0.0)),
+        "arm_pull_load_fraction": float(
+            final_info.get("arm_pull_load_fraction", 0.0)
+        ),
+        "arm_pull_impulse_ns": float(
+            final_info.get("arm_pull_impulse_ns", 0.0)
+        ),
+        "jumar_final_relative_progress_m": float(
+            final_info.get("jumar_relative_progress_m", np.nan)
+        ),
         "peak_ground_load_n": float(max(ground_forces, default=0.0)),
         "minimum_grasp_score": float(min(grasp_scores, default=0.0)),
         "mean_grasp_score": float(np.mean(grasp_scores)),
@@ -171,6 +206,18 @@ def record_policy_demo(
         "minimum_hand_separation_m": float(min(hand_separations, default=np.nan)),
         "cross_hand_collision_steps": int(np.sum(cross_hand_collisions)),
         "wall_hand_collision_steps": int(np.sum(wall_hand_collisions)),
+        "maximum_rope_extension_m": float(max(rope_extensions, default=np.nan)),
+        "maximum_rope_deformation_m": float(
+            max(rope_deformations, default=np.nan)
+        ),
+        "maximum_rope_contacts": int(max(rope_contacts, default=0.0)),
+        "rope_core_collision_steps": int(np.sum(rope_core_collisions)),
+        "hand_rope_contact_steps": int(
+            np.sum(np.asarray(hand_rope_contacts) > 0.0)
+        ),
+        "maximum_hand_rope_penetration_m": float(
+            max(hand_rope_penetrations, default=np.nan)
+        ),
         "policy_steps": len(actions),
         "mean_action": action_array.mean(axis=0).tolist(),
         "action_std": action_array.std(axis=0).tolist(),

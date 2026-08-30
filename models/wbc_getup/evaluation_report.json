@@ -1,0 +1,364 @@
+{
+  "passed": true,
+  "summary": {
+    "learned_policy_successes": 4,
+    "learned_policy_cases": 4,
+    "maximum_contact_penetration_m": 0.029163147017674612,
+    "maximum_motor_torque_ratio": 1.0,
+    "minimum_final_pelvis_height_m": 0.770624164067393,
+    "minimum_final_torso_upright": 0.9970001901728667
+  },
+  "gates": {
+    "all_perturbed_falls_recover": true,
+    "all_final_stances_stable": true,
+    "all_falls_settle_on_nonfoot_geometry": true,
+    "all_falls_settle_below_velocity_limits": true,
+    "no_floating_base_teleports": true,
+    "motor_catalog_limits_enforced": true,
+    "contact_penetration_below_30_mm": true,
+    "reference_trajectory_alone_fails": true,
+    "motors_off_recovery_fails": true
+  },
+  "learned_policy_cases": [
+    {
+      "success": true,
+      "recovery_mode": "policy",
+      "fall_condition": {
+        "label": "nominal backward shove",
+        "force_xyz_n": [
+          -100.0,
+          0.0,
+          0.0
+        ],
+        "push_duration_s": 0.2,
+        "fall_settle_duration_s": 3.0
+      },
+      "fall_end": {
+        "pelvis_height_m": 0.05819696731979585,
+        "torso_upright": 0.06481125359082655,
+        "base_linear_speed_mps": 0.00024775811858702133,
+        "base_angular_speed_radps": 0.001985602020326134,
+        "nonfoot_ground_contact": true,
+        "ground_contact_bodies": [
+          "left_ankle_roll_link",
+          "left_elbow_link",
+          "pelvis",
+          "right_ankle_roll_link",
+          "right_elbow_link",
+          "torso_link"
+        ],
+        "peak_impact_force_n": 5599.349538945555
+      },
+      "final_pelvis_height_m": 0.7763555627019404,
+      "final_torso_upright": 0.9970001901728667,
+      "final_base_linear_speed_mps": 0.01089997669284357,
+      "final_base_angular_speed_radps": 0.017555822077098528,
+      "final_both_feet_contact": true,
+      "grounded_duration_s": 7.22,
+      "peak_contact_force_n": 5599.349538945555,
+      "peak_actuator_torque_nm": 81.634,
+      "peak_motor_torque_ratio": 1.0,
+      "motor_torque_catalog_max_nm": 128.38,
+      "maximum_contact_penetration_m": 0.02460494161549863,
+      "root_teleports_after_fall_start": 0,
+      "simulated_duration_s": 12.120000000000884,
+      "physics": {
+        "gravity_mps2": [
+          0.0,
+          0.0,
+          -9.81
+        ],
+        "timestep_s": 0.002,
+        "solver": "Newton",
+        "integrator": "implicitfast",
+        "policy_rate_hz": 50,
+        "substeps_per_policy_action": 10
+      }
+    },
+    {
+      "success": true,
+      "recovery_mode": "policy",
+      "fall_condition": {
+        "label": "softer backward shove",
+        "force_xyz_n": [
+          -80.0,
+          0.0,
+          0.0
+        ],
+        "push_duration_s": 0.2,
+        "fall_settle_duration_s": 3.0
+      },
+      "fall_end": {
+        "pelvis_height_m": 0.05807093784761098,
+        "torso_upright": 0.06581613061160911,
+        "base_linear_speed_mps": 0.0003824689815162635,
+        "base_angular_speed_radps": 0.004651265206708821,
+        "nonfoot_ground_contact": true,
+        "ground_contact_bodies": [
+          "left_ankle_roll_link",
+          "left_elbow_link",
+          "pelvis",
+          "right_ankle_roll_link",
+          "right_elbow_link",
+          "torso_link"
+        ],
+        "peak_impact_force_n": 5968.26774773704
+      },
+      "final_pelvis_height_m": 0.770624164067393,
+      "final_torso_upright": 0.9978645212044792,
+      "final_base_linear_speed_mps": 0.016411175354961532,
+      "final_base_angular_speed_radps": 0.03072900387006212,
+      "final_both_feet_contact": true,
+      "grounded_duration_s": 7.1000000000000005,
+      "peak_contact_force_n": 5968.26774773704,
+      "peak_actuator_torque_nm": 81.634,
+      "peak_motor_torque_ratio": 1.0,
+      "motor_torque_catalog_max_nm": 128.38,
+      "maximum_contact_penetration_m": 0.029163147017674612,
+      "root_teleports_after_fall_start": 0,
+      "simulated_duration_s": 12.120000000000884,
+      "physics": {
+        "gravity_mps2": [
+          0.0,
+          0.0,
+          -9.81
+        ],
+        "timestep_s": 0.002,
+        "solver": "Newton",
+        "integrator": "implicitfast",
+        "policy_rate_hz": 50,
+        "substeps_per_policy_action": 10
+      }
+    },
+    {
+      "success": true,
+      "recovery_mode": "policy",
+      "fall_condition": {
+        "label": "left-biased shove",
+        "force_xyz_n": [
+          -100.0,
+          4.0,
+          0.0
+        ],
+        "push_duration_s": 0.2,
+        "fall_settle_duration_s": 3.0
+      },
+      "fall_end": {
+        "pelvis_height_m": 0.07033358318972711,
+        "torso_upright": 0.06896588204809903,
+        "base_linear_speed_mps": 0.0010216254588373646,
+        "base_angular_speed_radps": 0.025286333437743856,
+        "nonfoot_ground_contact": true,
+        "ground_contact_bodies": [
+          "left_ankle_roll_link",
+          "left_elbow_link",
+          "left_knee_link",
+          "left_wrist_yaw_link",
+          "right_ankle_roll_link",
+          "right_elbow_link",
+          "right_wrist_yaw_link",
+          "torso_link"
+        ],
+        "peak_impact_force_n": 5663.952857059692
+      },
+      "final_pelvis_height_m": 0.7746155699687323,
+      "final_torso_upright": 0.9970994795831216,
+      "final_base_linear_speed_mps": 0.0054169018809606655,
+      "final_base_angular_speed_radps": 0.02997000596652043,
+      "final_both_feet_contact": true,
+      "grounded_duration_s": 7.22,
+      "peak_contact_force_n": 5663.952857059692,
+      "peak_actuator_torque_nm": 81.634,
+      "peak_motor_torque_ratio": 1.0,
+      "motor_torque_catalog_max_nm": 128.38,
+      "maximum_contact_penetration_m": 0.024642468361452174,
+      "root_teleports_after_fall_start": 0,
+      "simulated_duration_s": 12.120000000000884,
+      "physics": {
+        "gravity_mps2": [
+          0.0,
+          0.0,
+          -9.81
+        ],
+        "timestep_s": 0.002,
+        "solver": "Newton",
+        "integrator": "implicitfast",
+        "policy_rate_hz": 50,
+        "substeps_per_policy_action": 10
+      }
+    },
+    {
+      "success": true,
+      "recovery_mode": "policy",
+      "fall_condition": {
+        "label": "right-biased shove",
+        "force_xyz_n": [
+          -100.0,
+          -4.0,
+          0.0
+        ],
+        "push_duration_s": 0.2,
+        "fall_settle_duration_s": 3.0
+      },
+      "fall_end": {
+        "pelvis_height_m": 0.06953779729284598,
+        "torso_upright": 0.06555800750238783,
+        "base_linear_speed_mps": 0.002726802955498961,
+        "base_angular_speed_radps": 0.04442440119028392,
+        "nonfoot_ground_contact": true,
+        "ground_contact_bodies": [
+          "left_ankle_roll_link",
+          "left_elbow_link",
+          "right_ankle_roll_link",
+          "right_elbow_link",
+          "right_wrist_yaw_link",
+          "torso_link"
+        ],
+        "peak_impact_force_n": 5780.40955316124
+      },
+      "final_pelvis_height_m": 0.776908191689809,
+      "final_torso_upright": 0.9970655052636113,
+      "final_base_linear_speed_mps": 0.01112955951663701,
+      "final_base_angular_speed_radps": 0.01840566613375246,
+      "final_both_feet_contact": true,
+      "grounded_duration_s": 7.18,
+      "peak_contact_force_n": 5780.40955316124,
+      "peak_actuator_torque_nm": 81.634,
+      "peak_motor_torque_ratio": 1.0,
+      "motor_torque_catalog_max_nm": 128.38,
+      "maximum_contact_penetration_m": 0.024720093165546006,
+      "root_teleports_after_fall_start": 0,
+      "simulated_duration_s": 12.120000000000884,
+      "physics": {
+        "gravity_mps2": [
+          0.0,
+          0.0,
+          -9.81
+        ],
+        "timestep_s": 0.002,
+        "solver": "Newton",
+        "integrator": "implicitfast",
+        "policy_rate_hz": 50,
+        "substeps_per_policy_action": 10
+      }
+    }
+  ],
+  "ablations": {
+    "reference_only": {
+      "success": false,
+      "recovery_mode": "reference_only",
+      "fall_condition": {
+        "label": "nominal backward shove",
+        "force_xyz_n": [
+          -100.0,
+          0.0,
+          0.0
+        ],
+        "push_duration_s": 0.2,
+        "fall_settle_duration_s": 3.0
+      },
+      "fall_end": {
+        "pelvis_height_m": 0.05819696731979585,
+        "torso_upright": 0.06481125359082655,
+        "base_linear_speed_mps": 0.00024775811858702133,
+        "base_angular_speed_radps": 0.001985602020326134,
+        "nonfoot_ground_contact": true,
+        "ground_contact_bodies": [
+          "left_ankle_roll_link",
+          "left_elbow_link",
+          "pelvis",
+          "right_ankle_roll_link",
+          "right_elbow_link",
+          "torso_link"
+        ],
+        "peak_impact_force_n": 5599.349538945555
+      },
+      "final_pelvis_height_m": 0.0581090500220085,
+      "final_torso_upright": 0.06972104559309533,
+      "final_base_linear_speed_mps": 0.00028495382226877353,
+      "final_base_angular_speed_radps": 0.009549851909023516,
+      "final_both_feet_contact": true,
+      "grounded_duration_s": 11.040000000000001,
+      "peak_contact_force_n": 5599.349538945555,
+      "peak_actuator_torque_nm": 48.2260360929634,
+      "peak_motor_torque_ratio": 0.601807615175712,
+      "motor_torque_catalog_max_nm": 128.38,
+      "maximum_contact_penetration_m": 0.02561015323867726,
+      "root_teleports_after_fall_start": 0,
+      "simulated_duration_s": 12.120000000000884,
+      "physics": {
+        "gravity_mps2": [
+          0.0,
+          0.0,
+          -9.81
+        ],
+        "timestep_s": 0.002,
+        "solver": "Newton",
+        "integrator": "implicitfast",
+        "policy_rate_hz": 50,
+        "substeps_per_policy_action": 10
+      }
+    },
+    "motors_off": {
+      "success": false,
+      "recovery_mode": "motors_off",
+      "fall_condition": {
+        "label": "nominal backward shove",
+        "force_xyz_n": [
+          -100.0,
+          0.0,
+          0.0
+        ],
+        "push_duration_s": 0.2,
+        "fall_settle_duration_s": 3.0
+      },
+      "fall_end": {
+        "pelvis_height_m": 0.05819696731979585,
+        "torso_upright": 0.06481125359082655,
+        "base_linear_speed_mps": 0.00024775811858702133,
+        "base_angular_speed_radps": 0.001985602020326134,
+        "nonfoot_ground_contact": true,
+        "ground_contact_bodies": [
+          "left_ankle_roll_link",
+          "left_elbow_link",
+          "pelvis",
+          "right_ankle_roll_link",
+          "right_elbow_link",
+          "torso_link"
+        ],
+        "peak_impact_force_n": 5599.349538945555
+      },
+      "final_pelvis_height_m": 0.06176620272468729,
+      "final_torso_upright": 0.041516072081191166,
+      "final_base_linear_speed_mps": 1.963664201556881e-05,
+      "final_base_angular_speed_radps": 0.000989450347679188,
+      "final_both_feet_contact": true,
+      "grounded_duration_s": 11.040000000000001,
+      "peak_contact_force_n": 5599.349538945555,
+      "peak_actuator_torque_nm": 15.048665608297767,
+      "peak_motor_torque_ratio": 0.3655730132103736,
+      "motor_torque_catalog_max_nm": 128.38,
+      "maximum_contact_penetration_m": 0.02460494161549863,
+      "root_teleports_after_fall_start": 0,
+      "simulated_duration_s": 12.120000000000884,
+      "physics": {
+        "gravity_mps2": [
+          0.0,
+          0.0,
+          -9.81
+        ],
+        "timestep_s": 0.002,
+        "solver": "Newton",
+        "integrator": "implicitfast",
+        "policy_rate_hz": 50,
+        "substeps_per_policy_action": 10
+      }
+    }
+  },
+  "policy_provenance": {
+    "source": "wbc-mjlab/wbc-g1-deploy",
+    "commit": "6dabf86fddc2b7b429b09e74999732fcde3441f9",
+    "license": "Apache-2.0",
+    "claim": "pretrained upstream WBC policy adapted here; not trained in this repository"
+  }
+}

@@ -3,6 +3,7 @@ imageio==2.37.4
 imageio-ffmpeg==0.6.0
 mujoco==3.12.0
 numpy==2.4.6
+onnxruntime==1.29.0
 Pillow==12.3.0
 stable-baselines3==2.9.0
 tensorboard==2.21.0

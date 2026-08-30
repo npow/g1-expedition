@@ -227,6 +227,7 @@ def record_learning_progress(
                     stage.done = bool(terminated or truncated)
                     stage.last_frame = render_with_alpine_backdrop(
                         stage.renderer,
+                        stage.env.model,
                         stage.env.data,
                         stage.camera,
                         alpine_backdrop(640, 360),

@@ -8,6 +8,7 @@
 !/README.md
 !/HANDOFF.md
 !/FIXED_LINE.md
+!/GETUP.md
 !/requirements.txt
 
 # Learned self-arrest implementation.
@@ -25,6 +26,13 @@
 !/evaluate_fixed_line.py
 !/record_fixed_line.py
 !/record_fixed_line_learning.py
+!/getup_controller.py
+!/evaluate_getup.py
+!/record_getup.py
+!/mountain_recovery.py
+!/train_mountain_recovery.py
+!/evaluate_mountain_recovery.py
+!/record_fixed_line_recovery.py
 
 # Supporting generation and fixed-line validation tools.
 !/scripts/
@@ -37,6 +45,16 @@
 !/scripts/test_hand_grasp.py
 !/scripts/test_visual.py
 !/scripts/validate_fixed_line_grasp.py
+!/scripts/fetch_getup_assets.py
+
+# Pinned get-up policy attribution/license. Binary policy and clip are fetched
+# with verified digests instead of being duplicated in Git.
+!/third_party/
+/third_party/*
+!/third_party/wbc_g1_getup/
+/third_party/wbc_g1_getup/*
+!/third_party/wbc_g1_getup/README.md
+!/third_party/wbc_g1_getup/LICENSE
 
 # Simulation assets and third-party Unitree model/license.
 !/assets/
@@ -51,6 +69,14 @@
 !/models/ppo_self_arrest_fall_line_v1/**
 !/models/ppo_fixed_line_slope/
 !/models/ppo_fixed_line_slope/**
+!/models/wbc_getup/
+!/models/wbc_getup/evaluation_report.json
+!/models/ppo_mountain_recovery/
+!/models/ppo_mountain_recovery/best/
+!/models/ppo_mountain_recovery/best/best_model.zip
+!/models/ppo_mountain_recovery/g1_mountain_recovery_final.zip
+!/models/ppo_mountain_recovery/training_metadata.json
+!/models/ppo_mountain_recovery/evaluation_report.json
 
 # Final evidence media only.
 !/videos/
@@ -64,6 +90,10 @@
 !/videos/g1_fixed_line_learned.json
 !/videos/g1_fixed_line_learning_progress.mp4
 !/videos/g1_fixed_line_learning_progress.json
+!/videos/g1_physical_getup.mp4
+!/videos/g1_physical_getup.json
+!/videos/g1_fixed_line_fall_recovery.mp4
+!/videos/g1_fixed_line_fall_recovery.json
 
 # Independent Isaac Lab cooperative-rescue scenario. Keep compact selected
 # artifacts, but not redundant raw Hugging Face job bundles or caches.

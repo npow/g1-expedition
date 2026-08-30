@@ -1,0 +1,68 @@
+{
+  "success": true,
+  "recovery_mode": "policy",
+  "fall_condition": {
+    "label": "backward shove",
+    "force_xyz_n": [
+      -100.0,
+      0.0,
+      0.0
+    ],
+    "push_duration_s": 0.2,
+    "fall_settle_duration_s": 3.0
+  },
+  "fall_end": {
+    "pelvis_height_m": 0.05819696731979585,
+    "torso_upright": 0.06481125359082655,
+    "base_linear_speed_mps": 0.00024775811858702133,
+    "base_angular_speed_radps": 0.001985602020326134,
+    "nonfoot_ground_contact": true,
+    "ground_contact_bodies": [
+      "left_ankle_roll_link",
+      "left_elbow_link",
+      "pelvis",
+      "right_ankle_roll_link",
+      "right_elbow_link",
+      "torso_link"
+    ],
+    "peak_impact_force_n": 5599.349538945555
+  },
+  "final_pelvis_height_m": 0.7763555627019404,
+  "final_torso_upright": 0.9970001901728667,
+  "final_base_linear_speed_mps": 0.01089997669284357,
+  "final_base_angular_speed_radps": 0.017555822077098528,
+  "final_both_feet_contact": true,
+  "grounded_duration_s": 7.22,
+  "peak_contact_force_n": 5599.349538945555,
+  "peak_actuator_torque_nm": 81.634,
+  "peak_motor_torque_ratio": 1.0,
+  "motor_torque_catalog_max_nm": 128.38,
+  "maximum_contact_penetration_m": 0.02460494161549863,
+  "root_teleports_after_fall_start": 0,
+  "simulated_duration_s": 12.120000000000884,
+  "physics": {
+    "gravity_mps2": [
+      0.0,
+      0.0,
+      -9.81
+    ],
+    "timestep_s": 0.002,
+    "solver": "Newton",
+    "integrator": "implicitfast",
+    "policy_rate_hz": 50,
+    "substeps_per_policy_action": 10
+  },
+  "video": "videos/g1_physical_getup.mp4",
+  "video_fps": 50,
+  "video_resolution": [
+    1600,
+    900
+  ],
+  "policy_provenance": {
+    "source": "https://github.com/wbc-mjlab/wbc-g1-deploy",
+    "commit": "6dabf86fddc2b7b429b09e74999732fcde3441f9",
+    "license": "Apache-2.0",
+    "trained_here": false
+  },
+  "last_frame_policy_inference_active": false
+}

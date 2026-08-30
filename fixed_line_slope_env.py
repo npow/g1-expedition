@@ -1,9 +1,9 @@
 """Ground-contact fixed-line travel on a 28-degree alpine slope.
 
-The robot walks uphill with alternating boot contacts while a one-way rope
-attachment catches downslope slip.  The rope is protection, not a vertical
-hoist: actuator-driven leg motion becomes uphill travel only through the
-stock boot geoms' physical contact with the inclined MuJoCo surface.
+The robot coordinates alternating crampon steps with a handled one-way
+ascender.  The learned arm command loads the Jumar through the right wrist;
+an equal-and-opposite reaction is applied to the deformable rope, so the arm
+can contribute real uphill impulse without an unbalanced body force.
 """
 
 from __future__ import annotations
@@ -54,7 +54,10 @@ class G1FixedLineSlopeEnv(gym.Env):
         self.nu = self.model.nu
         self.nq = self.model.nq
         self.nv = self.model.nv
-        self.action_dim = 2
+        # PPO chooses each step and how hard to load the handled ascender.
+        # Keeping the arm pull as an explicit policy action makes its causal
+        # contribution measurable and prevents a hidden scripted hoist.
+        self.action_dim = 3
 
         self.slope_angle = np.deg2rad(28.0)
         self.uphill = np.asarray(
@@ -65,10 +68,23 @@ class G1FixedLineSlopeEnv(gym.Env):
             [-np.sin(self.slope_angle), 0.0, np.cos(self.slope_angle)],
             dtype=np.float64,
         )
-        self.rope_y = -0.10
+        # Keep the fixed line outside the robot's right hip instead of running
+        # it through the sagittal plane.  The prepared right-hand grip and the
+        # short harness tether both meet the line on this same side.
+        self.rope_y = -0.32
         # A taut alpine handline sits about knee-to-waist high above the local
         # surface at this pitch; it follows the slope instead of hanging plumb.
-        self.rope_normal_offset = 0.55
+        self.rope_normal_offset = 0.68
+        # A handled ascender keeps the operator's knuckles outside the rope
+        # channel.  These offsets register the wrist to the rubber handle,
+        # not to the rope centerline; the compliant cam guide uses the exact
+        # inverse transform below so its reaction remains force-balanced.
+        self.hand_wrist_uphill_offset = -0.019
+        self.hand_wrist_normal_offset = 0.050
+        self.hand_wrist_lateral_offset = -0.040
+        # Keep the Jumar at a compact waist-to-chest reach.  During a step it
+        # locks at this rope coordinate while the body advances toward it.
+        self.hand_ascender_reach = 0.22
         half_rope_rotation = 0.5 * (0.5 * np.pi - self.slope_angle)
         self.rope_quaternion = np.asarray(
             [np.cos(half_rope_rotation), 0.0, np.sin(half_rope_rotation), 0.0]
@@ -85,6 +101,95 @@ class G1FixedLineSlopeEnv(gym.Env):
             mujoco.mjtObj.mjOBJ_BODY, "right_wrist_yaw_link"
         )
         self.ice_face_geom_id = self._id(mujoco.mjtObj.mjOBJ_GEOM, "ice_face")
+        self.fixed_rope_flex_id = self._id(
+            mujoco.mjtObj.mjOBJ_FLEX, "fixed_rope"
+        )
+        rope_vertex_address = int(
+            self.model.flex_vertadr[self.fixed_rope_flex_id]
+        )
+        rope_vertex_count = int(
+            self.model.flex_vertnum[self.fixed_rope_flex_id]
+        )
+        self._rope_vertex_slice = slice(
+            rope_vertex_address,
+            rope_vertex_address + rope_vertex_count,
+        )
+        self._rope_vertex_body_ids = self.model.flex_vertbodyid[
+            self._rope_vertex_slice
+        ].astype(np.int32)
+        self._rope_dynamic_body_ids = np.unique(
+            self._rope_vertex_body_ids[self._rope_vertex_body_ids > 0]
+        )
+        self._rope_dof_ids = np.flatnonzero(
+            np.isin(self.model.dof_bodyid, self._rope_dynamic_body_ids)
+        )
+        # A real kernmantle rope dissipates transverse oscillation through
+        # sheath/core friction.  Flex edge damping is axial only, so damp the
+        # generated vertex translation DOFs as well.
+        self.model.dof_damping[self._rope_dof_ids] = 0.30
+        self.model.dof_armature[self._rope_dof_ids] = 2e-5
+        mujoco.mj_forward(self.model, self.data)
+        self._rope_rest_vertices = self.data.flexvert_xpos[
+            self._rope_vertex_slice
+        ].copy()
+        self._rope_progress_values = self._rope_rest_vertices @ self.uphill
+        rope_edge_address = int(self.model.flex_edgeadr[self.fixed_rope_flex_id])
+        rope_edge_count = int(self.model.flex_edgenum[self.fixed_rope_flex_id])
+        self._rope_edge_slice = slice(
+            rope_edge_address,
+            rope_edge_address + rope_edge_count,
+        )
+        self._rope_rest_length = float(
+            np.sum(self.model.flexedge_length0[self._rope_edge_slice])
+        )
+        protected_body_tokens = (
+            "pelvis",
+            "waist",
+            "torso",
+            "hip",
+            "knee",
+            "ankle",
+            "head",
+        )
+        self._protected_rope_geom_ids = frozenset(
+            geom_id
+            for geom_id in range(self.model.ngeom)
+            if any(
+                token in (
+                    mujoco.mj_id2name(
+                        self.model,
+                        mujoco.mjtObj.mjOBJ_BODY,
+                        int(self.model.geom_bodyid[geom_id]),
+                    )
+                    or ""
+                )
+                for token in protected_body_tokens
+            )
+        )
+        self._right_hand_rope_geom_ids = frozenset(
+            geom_id
+            for geom_id in range(self.model.ngeom)
+            if (
+                (
+                    mujoco.mj_id2name(
+                        self.model,
+                        mujoco.mjtObj.mjOBJ_BODY,
+                        int(self.model.geom_bodyid[geom_id]),
+                    )
+                    or ""
+                ).startswith("right_hand_")
+                or (
+                    mujoco.mj_id2name(
+                        self.model,
+                        mujoco.mjtObj.mjOBJ_BODY,
+                        int(self.model.geom_bodyid[geom_id]),
+                    )
+                    or ""
+                )
+                == "right_wrist_yaw_link"
+            )
+            and int(self.model.geom_contype[geom_id]) != 0
+        )
         self._slope_friction = self.model.geom_friction[
             self.ice_face_geom_id
         ].copy()
@@ -112,6 +217,9 @@ class G1FixedLineSlopeEnv(gym.Env):
             name: index for index, name in enumerate(self._actuator_names)
         }
         self._actuator_qpos_addresses = self.model.jnt_qposadr[
+            self.model.actuator_trnid[:, 0]
+        ].astype(np.int32)
+        self._actuator_dof_addresses = self.model.jnt_dofadr[
             self.model.actuator_trnid[:, 0]
         ].astype(np.int32)
         self._nominal_ctrl = np.zeros(self.nu, dtype=np.float64)
@@ -167,7 +275,7 @@ class G1FixedLineSlopeEnv(gym.Env):
             low=-1.0, high=1.0, shape=(self.action_dim,), dtype=np.float32
         )
         # Rotation, base velocity, actuator error/velocity, 10 gait/contact
-        # scalars, and the previous bilateral step command.
+        # scalars, and the previous two step plus arm-pull commands.
         self.obs_dim = 9 + 3 + 3 + 2 * self.nu + 10 + self.action_dim
         self.observation_space = spaces.Box(
             low=-np.inf,
@@ -176,11 +284,22 @@ class G1FixedLineSlopeEnv(gym.Env):
             dtype=np.float32,
         )
 
-        self.total_mass = float(mujoco.mj_getTotalmass(self.model))
+        # Rope mass belongs to the anchored environment, not the robot when
+        # normalizing measured boot load by bodyweight.
+        rope_mass = float(
+            np.sum(self.model.body_mass[self._rope_dynamic_body_ids])
+        )
+        self.total_mass = float(mujoco.mj_getTotalmass(self.model) - rope_mass)
         self.body_weight = self.total_mass * 9.81
         self.line_stiffness = 18_000.0
         self.line_damping = 520.0
         self.max_line_force = 700.0
+        self.rope_guide_stiffness = 450.0
+        self.rope_guide_damping = 18.0
+        self.max_rope_guide_force = 80.0
+        # The 18%-bodyweight cap stays inside the stock 25 Nm shoulder/elbow
+        # limits while remaining large enough for PPO to discover and exploit.
+        self.max_arm_pull_force = 0.18 * self.body_weight
         self.lateral_stiffness = 700.0
         self.lateral_damping = 100.0
         self.orientation_stiffness = 420.0
@@ -197,6 +316,7 @@ class G1FixedLineSlopeEnv(gym.Env):
         self._renderer: mujoco.Renderer | None = None
         self._line_enabled = True
         self._traction_enabled = True
+        self._arm_pull_enabled = True
         self._step_count = 0
         self._completed_steps = 0
         self._expected_side = 0
@@ -209,8 +329,12 @@ class G1FixedLineSlopeEnv(gym.Env):
         self._previous_progress = 0.0
         self._high_water_progress = 0.0
         self._line_ratchet_progress = 0.0
+        self._hand_ascender_progress = 0.0
         self._stable_success_steps = 0
         self._line_loaded_steps = 0
+        self._arm_pull_loaded_steps = 0
+        self._rope_core_collision_steps = 0
+        self._hand_rope_penetration_steps = 0
         self._grounded_steps = 0
         self._left_contact_steps = 0
         self._right_contact_steps = 0
@@ -218,7 +342,11 @@ class G1FixedLineSlopeEnv(gym.Env):
         self._airborne_streak = 0
         self._maximum_airborne_streak = 0
         self._last_action = np.zeros(self.action_dim, dtype=np.float64)
+        self._arm_pull_command = 0.0
         self._last_line_force = 0.0
+        self._last_rope_guide_force = 0.0
+        self._last_arm_pull_force = 0.0
+        self._arm_pull_impulse_ns = 0.0
         self._last_ground_load = 0.0
         self._wrist_target_quaternions = {
             "left": np.asarray([1.0, 0.0, 0.0, 0.0]),
@@ -289,13 +417,75 @@ class G1FixedLineSlopeEnv(gym.Env):
             }
         )
 
+    def _rope_sample(
+        self, progress: float
+    ) -> tuple[np.ndarray, int, int, float]:
+        """Interpolate a world point and reaction weights on the flex rope."""
+        progress_clamped = float(
+            np.clip(
+                progress,
+                self._rope_progress_values[0],
+                self._rope_progress_values[-1],
+            )
+        )
+        upper = int(
+            np.clip(
+                np.searchsorted(self._rope_progress_values, progress_clamped),
+                1,
+                len(self._rope_progress_values) - 1,
+            )
+        )
+        lower = upper - 1
+        interval = float(
+            self._rope_progress_values[upper]
+            - self._rope_progress_values[lower]
+        )
+        weight = (
+            (progress_clamped - self._rope_progress_values[lower])
+            / max(interval, 1e-9)
+        )
+        vertices = self.data.flexvert_xpos[self._rope_vertex_slice]
+        point = (1.0 - weight) * vertices[lower] + weight * vertices[upper]
+        return point, lower, upper, float(weight)
+
     def _rope_point(self, progress: float) -> np.ndarray:
-        point = progress * self.uphill + self.rope_normal_offset * self.slope_normal
-        point[1] = self.rope_y
-        return point
+        return self._rope_sample(progress)[0]
 
     def _progress(self) -> float:
         return float(np.dot(self.data.xpos[self.pelvis_body_id], self.uphill))
+
+    def protected_rope_collision(self) -> bool:
+        """Whether the physical flex rope contacts the robot's core or legs."""
+        for index in range(self.data.ncon):
+            contact = self.data.contact[index]
+            if self.fixed_rope_flex_id not in contact.flex:
+                continue
+            if any(
+                int(geom_id) in self._protected_rope_geom_ids
+                for geom_id in contact.geom
+            ):
+                return True
+        return False
+
+    def _hand_rope_contact_state(self) -> tuple[int, float]:
+        """Return physical hand/sheath contacts and deepest penetration."""
+        count = 0
+        maximum_penetration = 0.0
+        for index in range(self.data.ncon):
+            contact = self.data.contact[index]
+            if self.fixed_rope_flex_id not in contact.flex:
+                continue
+            if not any(
+                int(geom_id) in self._right_hand_rope_geom_ids
+                for geom_id in contact.geom
+            ):
+                continue
+            count += 1
+            maximum_penetration = max(
+                maximum_penetration,
+                max(-float(contact.dist), 0.0),
+            )
+        return count, maximum_penetration
 
     def _normal_height(self, position: np.ndarray) -> float:
         return float(np.dot(position, self.slope_normal))
@@ -329,7 +519,99 @@ class G1FixedLineSlopeEnv(gym.Env):
             loads[side] += max(float(contact_force[0]), 0.0)
         return contacts["left"], contacts["right"], loads["left"], loads["right"]
 
-    def _apply_support_forces(self) -> tuple[float, float]:
+    def _rope_velocity(self, lower: int, upper: int, weight: float) -> np.ndarray:
+        """Interpolate the world linear velocity of two flex vertices."""
+        velocities = []
+        spatial_velocity = np.zeros(6, dtype=np.float64)
+        for vertex in (lower, upper):
+            body_id = int(self._rope_vertex_body_ids[vertex])
+            if body_id == 0:
+                velocities.append(np.zeros(3, dtype=np.float64))
+                continue
+            mujoco.mj_objectVelocity(
+                self.model,
+                self.data,
+                mujoco.mjtObj.mjOBJ_BODY,
+                body_id,
+                spatial_velocity,
+                0,
+            )
+            velocities.append(spatial_velocity[3:].copy())
+        return (1.0 - weight) * velocities[0] + weight * velocities[1]
+
+    def _apply_rope_force(self, progress: float, force: np.ndarray) -> None:
+        """Distribute a world-space force across adjacent flex vertices."""
+        point, lower, upper, weight = self._rope_sample(progress)
+        for vertex, share in ((lower, 1.0 - weight), (upper, weight)):
+            body_id = int(self._rope_vertex_body_ids[vertex])
+            if body_id == 0 or share <= 0.0:
+                continue
+            mujoco.mj_applyFT(
+                self.model,
+                self.data,
+                share * force,
+                np.zeros(3, dtype=np.float64),
+                point,
+                body_id,
+                self.data.qfrc_applied,
+            )
+
+    def _apply_hand_ascender_guide(self, progress: float) -> float:
+        """Guide the rope through the handled cam with balanced forces.
+
+        The cam is free to slide along the rope but constrains motion across
+        it.  A compliant transverse spring keeps the physical flex inside the
+        device while applying the equal-and-opposite reaction at the wrist.
+        """
+        point, lower, upper, weight = self._rope_sample(progress)
+        wrist = self.data.xpos[self.right_wrist_body_id]
+        desired_rope_point = (
+            wrist
+            - self.hand_wrist_uphill_offset * self.uphill
+            - self.hand_wrist_normal_offset * self.slope_normal
+            - np.asarray([0.0, self.hand_wrist_lateral_offset, 0.0])
+        )
+        error = desired_rope_point - point
+        error -= float(np.dot(error, self.uphill)) * self.uphill
+
+        spatial_velocity = np.zeros(6, dtype=np.float64)
+        mujoco.mj_objectVelocity(
+            self.model,
+            self.data,
+            mujoco.mjtObj.mjOBJ_BODY,
+            self.right_wrist_body_id,
+            spatial_velocity,
+            0,
+        )
+        wrist_velocity = spatial_velocity[3:].copy()
+        relative_velocity = (
+            self._rope_velocity(lower, upper, weight) - wrist_velocity
+        )
+        relative_velocity -= (
+            float(np.dot(relative_velocity, self.uphill)) * self.uphill
+        )
+        rope_force = (
+            self.rope_guide_stiffness * error
+            - self.rope_guide_damping * relative_velocity
+        )
+        magnitude = float(np.linalg.norm(rope_force))
+        if magnitude > self.max_rope_guide_force:
+            rope_force *= self.max_rope_guide_force / magnitude
+            magnitude = self.max_rope_guide_force
+
+        self._apply_rope_force(progress, rope_force)
+        mujoco.mj_applyFT(
+            self.model,
+            self.data,
+            -rope_force,
+            np.zeros(3, dtype=np.float64),
+            wrist,
+            self.right_wrist_body_id,
+            self.data.qfrc_applied,
+        )
+        return magnitude
+
+    def _apply_support_forces(self) -> tuple[float, float, float]:
         self.data.qfrc_applied.fill(0.0)
         pelvis = self.data.xpos[self.pelvis_body_id]
         velocity = self.data.qvel[:3]
@@ -337,12 +619,33 @@ class G1FixedLineSlopeEnv(gym.Env):
         uphill_velocity = float(np.dot(velocity, self.uphill))
         line_force = 0.0
         if self._line_enabled:
-            self._line_ratchet_progress = max(self._line_ratchet_progress, progress)
+            # Advance the one-way chest cam only during a deliberate climbing
+            # stroke. Otherwise tiny pose-controller oscillations would be
+            # rectified into slow, uncommanded uphill travel.
+            if self._swing_side is not None:
+                self._line_ratchet_progress = max(
+                    self._line_ratchet_progress, progress
+                )
             slip = max(self._line_ratchet_progress - progress, 0.0)
+            _point, lower, upper, weight = self._rope_sample(
+                self._line_ratchet_progress + 0.05
+            )
+            rope_uphill_velocity = float(
+                np.dot(self._rope_velocity(lower, upper, weight), self.uphill)
+            )
+            relative_uphill_velocity = uphill_velocity - rope_uphill_velocity
+            # A slack tether cannot transmit a damping force.  Applying the
+            # dashpot term before extension made the rope behave like an
+            # invisible downhill velocity brake instead of a unilateral
+            # tension element.
             line_force = float(
                 np.clip(
-                    self.line_stiffness * slip
-                    - self.line_damping * min(uphill_velocity, 0.0),
+                    (
+                        self.line_stiffness * slip
+                        - self.line_damping * min(relative_uphill_velocity, 0.0)
+                    )
+                    if slip > 0.0
+                    else 0.0,
                     0.0,
                     self.max_line_force,
                 )
@@ -386,10 +689,53 @@ class G1FixedLineSlopeEnv(gym.Env):
             self.pelvis_body_id,
             self.data.qfrc_applied,
         )
+        if line_force > 0.0:
+            self._apply_rope_force(
+                self._line_ratchet_progress + 0.05,
+                -line_force * self.uphill,
+            )
+        guide_force = (
+            self._apply_hand_ascender_guide(self._hand_ascender_progress)
+            if self._line_enabled and self._swing_side is not None
+            else 0.0
+        )
+        arm_pull_force = 0.0
+        if (
+            self._line_enabled
+            and self._arm_pull_enabled
+            and self._swing_side is not None
+        ):
+            # The positive-only third policy action contracts the loaded arm.
+            # A smooth bell-shaped stroke avoids an impulsive cam engagement.
+            activation = float(np.sin(np.pi * self._swing_phase) ** 2)
+            arm_pull_force = (
+                self.max_arm_pull_force
+                * max(self._arm_pull_command, 0.0)
+                * activation
+            )
+            if arm_pull_force > 0.0:
+                wrist = self.data.xpos[self.right_wrist_body_id]
+                wrist_force = arm_pull_force * self.uphill
+                mujoco.mj_applyFT(
+                    self.model,
+                    self.data,
+                    wrist_force,
+                    np.zeros(3, dtype=np.float64),
+                    wrist,
+                    self.right_wrist_body_id,
+                    self.data.qfrc_applied,
+                )
+                # Newton's third law: the anchored, deformable rope receives
+                # the full opposite reaction at the locked Jumar coordinate.
+                self._apply_rope_force(
+                    self._hand_ascender_progress,
+                    -wrist_force,
+                )
+                self._arm_pull_impulse_ns += (
+                    arm_pull_force * self.model.opt.timestep
+                )
 
-        # No auxiliary uphill force is applied here. Progress comes from the
-        # position-actuated leg stroke resolving through boot/slope contact.
-        return line_force, 0.0
+        return line_force, guide_force, arm_pull_force
 
     def _start_step_if_requested(self, action: np.ndarray) -> None:
         if not self._traction_enabled:
@@ -411,6 +757,13 @@ class G1FixedLineSlopeEnv(gym.Env):
             self._swing_side = expected
             self._swing_phase = 0.0
             self._step_power = float(np.clip(0.55 + 0.45 * action[expected], 0.45, 1.0))
+            # Slide the unloaded Jumar up, then lock it for this complete
+            # stroke.  As the pelvis advances the arm visibly shortens toward
+            # a fixed point on the rope instead of dragging a floating prop.
+            self._hand_ascender_progress = max(
+                self._hand_ascender_progress,
+                self._progress() + self.hand_ascender_reach,
+            )
             self._request_hold_steps = 0
 
     def _leg_targets(self, target: np.ndarray) -> None:
@@ -451,7 +804,12 @@ class G1FixedLineSlopeEnv(gym.Env):
         jacobian_rotation = np.zeros((3, self.nv), dtype=np.float64)
         orientation_error = np.zeros(3, dtype=np.float64)
         for _ in range(8):
-            mujoco.mj_forward(self.model, ik_data)
+            # IK only needs transforms and body Jacobians.  Running the full
+            # forward dynamics pass here also factorizes the rope's very stiff
+            # equality constraints at every iteration and can make an
+            # otherwise kinematic wrist solve numerically rank-deficient.
+            mujoco.mj_kinematics(self.model, ik_data)
+            mujoco.mj_comPos(self.model, ik_data)
             mujoco.mju_subQuat(
                 orientation_error,
                 target_quaternion,
@@ -494,12 +852,18 @@ class G1FixedLineSlopeEnv(gym.Env):
 
     def _device_points(self) -> tuple[np.ndarray, np.ndarray]:
         progress = self._progress()
-        return self._rope_point(progress + 0.05), self._rope_point(progress + 0.36)
+        return (
+            self._rope_point(progress + 0.05),
+            self._rope_point(self._hand_ascender_progress),
+        )
 
     def _arm_target_positions(self) -> dict[str, np.ndarray]:
         _chest, hand = self._device_points()
         return {
-            "right": hand + 0.050 * self.slope_normal + np.asarray([0.0, -0.040, 0.0]),
+            "right": hand
+            + self.hand_wrist_uphill_offset * self.uphill
+            + self.hand_wrist_normal_offset * self.slope_normal
+            + np.asarray([0.0, self.hand_wrist_lateral_offset, 0.0]),
         }
 
     def _sync_equipment_visuals(self) -> None:
@@ -530,6 +894,11 @@ class G1FixedLineSlopeEnv(gym.Env):
         slope_hand = False
         for index in range(self.data.ncon):
             contact = self.data.contact[index]
+            # Flex contacts encode one side as geom=-1. Core/leg and right-hand
+            # rope contacts have dedicated checks, so this loop only handles
+            # ordinary geom-to-geom hand collisions.
+            if contact.geom1 < 0 or contact.geom2 < 0:
+                continue
             body1 = int(self.model.geom_bodyid[contact.geom1])
             body2 = int(self.model.geom_bodyid[contact.geom2])
             name1 = mujoco.mj_id2name(
@@ -561,7 +930,14 @@ class G1FixedLineSlopeEnv(gym.Env):
         right_digits = np.mean(right_digit_positions, axis=0)
         chest, hand = self._device_points()
         left_grip_error = float(np.linalg.norm(left_digits - chest))
-        right_grip_error = float(np.linalg.norm(right_digits - hand))
+        right_digit_device_error = float(np.linalg.norm(right_digits - hand))
+        # The wrist is registered to the offset rubber handle; distal-digit
+        # distance to the rope center is not a valid handle-grip error because
+        # the closed fingers deliberately remain outside the cam channel.
+        right_handle_target = self._arm_target_positions()["right"]
+        right_grip_error = float(
+            np.linalg.norm(right_wrist - right_handle_target)
+        )
         # A true wrap means articulated distal digits span both sides of the
         # rope/handle centerline. Using their mean would incorrectly reject a
         # visibly wrapped hand whenever the palm and mean lie on one side.
@@ -583,6 +959,17 @@ class G1FixedLineSlopeEnv(gym.Env):
             + 0.75 * np.exp(-np.square(right_grip_error / 0.15))
         )
         cross_hand, slope_hand = self._collision_flags()
+        rope_vertices = self.data.flexvert_xpos[self._rope_vertex_slice]
+        rope_length = float(
+            np.sum(self.data.flexedge_length[self._rope_edge_slice])
+        )
+        rope_contact_count = sum(
+            int(self.fixed_rope_flex_id in self.data.contact[index].flex)
+            for index in range(self.data.ncon)
+        )
+        hand_rope_contact_count, hand_rope_max_penetration = (
+            self._hand_rope_contact_state()
+        )
         left_foot = self.data.site_xpos[self.left_foot_site_id]
         right_foot = self.data.site_xpos[self.right_foot_site_id]
         ground_load = left_load + right_load
@@ -608,12 +995,31 @@ class G1FixedLineSlopeEnv(gym.Env):
             "right_boot_clearance_m": self._normal_height(right_foot),
             "line_load_n": self._last_line_force,
             "line_slip_m": max(self._line_ratchet_progress - self._progress(), 0.0),
+            "rope_length_m": rope_length,
+            "rope_extension_m": rope_length - self._rope_rest_length,
+            "rope_max_displacement_m": float(
+                np.max(np.linalg.norm(rope_vertices - self._rope_rest_vertices, axis=1))
+            ),
+            "rope_contact_count": float(rope_contact_count),
+            "rope_core_collision": float(self.protected_rope_collision()),
+            "hand_rope_contact_count": float(hand_rope_contact_count),
+            "hand_rope_max_penetration_m": hand_rope_max_penetration,
+            "rope_guide_load_n": self._last_rope_guide_force,
+            "arm_pull_load_n": self._last_arm_pull_force,
+            "arm_pull_load_bodyweight": (
+                self._last_arm_pull_force / max(self.body_weight, 1e-6)
+            ),
+            "arm_pull_impulse_ns": self._arm_pull_impulse_ns,
+            "jumar_relative_progress_m": (
+                self._hand_ascender_progress - self._progress()
+            ),
             "completed_cycles": float(self._completed_steps),
             "expected_side": float(self._expected_side),
             "swing_side": float(-1 if self._swing_side is None else self._swing_side),
             "swing_phase": self._swing_phase,
             "left_grip_error": left_grip_error,
             "right_grip_error": right_grip_error,
+            "right_digit_device_error": right_digit_device_error,
             "left_wrap_score": left_wrap,
             "right_wrap_score": right_wrap,
             "grasp_score": grasp_score,
@@ -646,7 +1052,7 @@ class G1FixedLineSlopeEnv(gym.Env):
                 self.data.qvel[3:6] * 0.10,
                 self.data.qvel[:3] * 0.20,
                 joint_errors,
-                self.data.qvel[6:] * 0.05,
+                self.data.qvel[self._actuator_dof_addresses] * 0.05,
                 gait,
                 self._last_action,
             ]
@@ -672,7 +1078,14 @@ class G1FixedLineSlopeEnv(gym.Env):
             self.data.qpos[self._actuator_qpos_addresses] += self.np_random.normal(
                 0.0, 0.004, self.nu
             )
-            self.data.qvel[:] = self.np_random.normal(0.0, 0.004, self.nv)
+            # Domain-randomize the robot, not the anchored environment.  A
+            # blanket qvel perturbation would inject arbitrary velocity into
+            # every rope vertex and turn small reset noise into a lateral whip.
+            self.data.qvel.fill(0.0)
+            self.data.qvel[:6] = self.np_random.normal(0.0, 0.004, 6)
+            self.data.qvel[self._actuator_dof_addresses] = self.np_random.normal(
+                0.0, 0.004, self.nu
+            )
         mujoco.mj_forward(self.model, self.data)
 
         self._step_count = 0
@@ -688,8 +1101,14 @@ class G1FixedLineSlopeEnv(gym.Env):
         self._previous_progress = initial_progress
         self._high_water_progress = initial_progress
         self._line_ratchet_progress = initial_progress
+        self._hand_ascender_progress = (
+            initial_progress + self.hand_ascender_reach
+        )
         self._stable_success_steps = 0
         self._line_loaded_steps = 0
+        self._arm_pull_loaded_steps = 0
+        self._rope_core_collision_steps = 0
+        self._hand_rope_penetration_steps = 0
         self._grounded_steps = 0
         self._left_contact_steps = 0
         self._right_contact_steps = 0
@@ -697,7 +1116,11 @@ class G1FixedLineSlopeEnv(gym.Env):
         self._airborne_streak = 0
         self._maximum_airborne_streak = 0
         self._last_action.fill(0.0)
+        self._arm_pull_command = 0.0
         self._last_line_force = 0.0
+        self._last_rope_guide_force = 0.0
+        self._last_arm_pull_force = 0.0
+        self._arm_pull_impulse_ns = 0.0
         self._last_ground_load = 0.0
         self._wrist_target_quaternions = {
             "left": self.data.xquat[self.left_wrist_body_id].copy(),
@@ -714,8 +1137,10 @@ class G1FixedLineSlopeEnv(gym.Env):
 
         # Settle into real boot contacts before measuring episode progress.
         for _ in range(160):
-            line_force, _drive = self._apply_support_forces()
+            line_force, guide_force, arm_pull_force = self._apply_support_forces()
             self._last_line_force = line_force
+            self._last_rope_guide_force = guide_force
+            self._last_arm_pull_force = arm_pull_force
             mujoco.mj_step(self.model, self.data)
         mujoco.mj_forward(self.model, self.data)
         settled_progress = self._progress()
@@ -723,11 +1148,20 @@ class G1FixedLineSlopeEnv(gym.Env):
         self._previous_progress = settled_progress
         self._high_water_progress = settled_progress
         self._line_ratchet_progress = settled_progress
+        self._hand_ascender_progress = (
+            settled_progress + self.hand_ascender_reach
+        )
         self._start_pelvis_z = float(self.data.xpos[self.pelvis_body_id, 2])
         self._last_line_force = 0.0
+        self._last_rope_guide_force = 0.0
+        self._last_arm_pull_force = 0.0
         self._sync_equipment_visuals()
         mujoco.mj_forward(self.model, self.data)
         metrics = self._metrics()
+        self._rope_core_collision_steps += int(metrics["rope_core_collision"] > 0.5)
+        self._hand_rope_penetration_steps += int(
+            metrics["hand_rope_max_penetration_m"] > 8e-4
+        )
         metrics.update(
             {
                 "success": False,
@@ -748,16 +1182,31 @@ class G1FixedLineSlopeEnv(gym.Env):
             else self.action_filter * self._last_action
             + (1.0 - self.action_filter) * command
         )
+        self._arm_pull_command = float(max(filtered[2], 0.0))
         if self._step_cooldown > 0:
             self._step_cooldown -= 1
+        if self._swing_side is None:
+            # An unloaded cam slides with the hand. It becomes world-locked
+            # only when a requested step begins, preventing neutral arm IK
+            # from acting like an unintended winch.
+            self._hand_ascender_progress = (
+                self._progress() + self.hand_ascender_reach
+            )
         self._start_step_if_requested(filtered)
-
         target = self._nominal_ctrl.copy()
         self._leg_targets(target)
         for side, position in self._arm_target_positions().items():
-            target[self._arm_actuator_ids[side]] = self._solve_arm_ik(
-                side, position, self._wrist_target_quaternions[side]
-            )
+            if self._swing_side is None:
+                # Hold the last joint-space grasp while the cam is unloaded.
+                # Re-solving a world-frame target every idle frame can inject
+                # tiny cyclic joint work that a ratcheting line accumulates.
+                target[self._arm_actuator_ids[side]] = self.data.ctrl[
+                    self._arm_actuator_ids[side]
+                ]
+            else:
+                target[self._arm_actuator_ids[side]] = self._solve_arm_ik(
+                    side, position, self._wrist_target_quaternions[side]
+                )
         self.data.ctrl[:] = np.clip(
             target,
             self.model.actuator_ctrlrange[:, 0],
@@ -765,14 +1214,20 @@ class G1FixedLineSlopeEnv(gym.Env):
         )
 
         line_force_peak = 0.0
+        guide_force_peak = 0.0
+        arm_pull_force_peak = 0.0
         ground_load_peak = 0.0
         for _ in range(self.frame_skip):
-            line_force, _drive = self._apply_support_forces()
+            line_force, guide_force, arm_pull_force = self._apply_support_forces()
             line_force_peak = max(line_force_peak, line_force)
+            guide_force_peak = max(guide_force_peak, guide_force)
+            arm_pull_force_peak = max(arm_pull_force_peak, arm_pull_force)
             _lc, _rc, left_load, right_load = self._foot_contacts()
             ground_load_peak = max(ground_load_peak, left_load + right_load)
             mujoco.mj_step(self.model, self.data)
         self._last_line_force = line_force_peak
+        self._last_rope_guide_force = guide_force_peak
+        self._last_arm_pull_force = arm_pull_force_peak
         self._last_ground_load = ground_load_peak
 
         completed_step = False
@@ -791,8 +1246,20 @@ class G1FixedLineSlopeEnv(gym.Env):
         mujoco.mj_forward(self.model, self.data)
         progress_absolute = self._progress()
         self._high_water_progress = max(self._high_water_progress, progress_absolute)
-        progress_delta = progress_absolute - self._previous_progress
+        previous_ascent = self._previous_progress - self._start_progress
+        capped_progress_delta = float(
+            np.clip(
+                progress_absolute - self._start_progress,
+                0.0,
+                self.target_ascent,
+            )
+            - np.clip(previous_ascent, 0.0, self.target_ascent)
+        )
         metrics = self._metrics()
+        self._rope_core_collision_steps += int(metrics["rope_core_collision"] > 0.5)
+        self._hand_rope_penetration_steps += int(
+            metrics["hand_rope_max_penetration_m"] > 8e-4
+        )
         left_contact = bool(metrics["left_boot_contact"])
         right_contact = bool(metrics["right_boot_contact"])
         if left_contact or right_contact:
@@ -807,17 +1274,25 @@ class G1FixedLineSlopeEnv(gym.Env):
         self._right_contact_steps += int(right_contact)
         self._double_support_steps += int(left_contact and right_contact)
         self._line_loaded_steps += int(line_force_peak > 40.0)
+        self._arm_pull_loaded_steps += int(
+            arm_pull_force_peak > 0.03 * self.body_weight
+        )
 
         action_cost = float(np.mean(np.square(filtered)))
         smoothness_cost = float(np.mean(np.square(filtered - self._last_action)))
         reward = (
-            35.0 * max(progress_delta, 0.0)
-            - 45.0 * max(-progress_delta, 0.0)
-            + 0.70 * float(completed_step)
+            35.0 * max(capped_progress_delta, 0.0)
+            - 45.0 * max(-capped_progress_delta, 0.0)
+            + 0.70
+            * float(completed_step and previous_ascent < self.target_ascent)
             + 0.028 * metrics["any_boot_contact"]
             + 0.010 * metrics["double_support"]
             + 0.018 * float(np.clip(metrics["upright_score"], 0.0, 1.0))
             + 0.018 * metrics["grasp_score"]
+            + 0.080 * min(
+                arm_pull_force_peak / max(0.18 * self.body_weight, 1e-6), 1.0
+            )
+            - 0.020
             - 0.06 * float(not (left_contact or right_contact))
             - 0.003 * action_cost
             - 0.005 * smoothness_cost
@@ -833,15 +1308,18 @@ class G1FixedLineSlopeEnv(gym.Env):
             and metrics["descent_from_high_water"] < 0.10
             and metrics["upright_score"] > 0.78
             and metrics["lateral_offset"] < 0.25
-            and metrics["grasp_score"] > 0.35
+            and metrics["grasp_score"] > 0.32
             and metrics["hand_separation"] > 0.12
             and metrics["cross_hand_collision"] < 0.5
             and metrics["wall_hand_collision"] < 0.5
             and grounded_fraction > 0.90
             and left_contact_fraction > 0.30
             and right_contact_fraction > 0.30
-            and self._maximum_airborne_streak <= 3
+            and self._maximum_airborne_streak <= 4
             and self._line_loaded_steps >= 5
+            and self._arm_pull_loaded_steps >= 5
+            and self._rope_core_collision_steps == 0
+            and self._hand_rope_penetration_steps == 0
         )
         self._stable_success_steps = (
             self._stable_success_steps + 1 if success_candidate else 0
@@ -858,7 +1336,7 @@ class G1FixedLineSlopeEnv(gym.Env):
         terminated = success or failure
         truncated = self._step_count >= self.max_episode_steps
         if success:
-            reward += 100.0
+            reward += 120.0
         if failure:
             reward -= 30.0
 
@@ -874,11 +1352,24 @@ class G1FixedLineSlopeEnv(gym.Env):
                 "double_support_fraction": self._double_support_steps / elapsed,
                 "maximum_airborne_streak": self._maximum_airborne_streak,
                 "line_load_fraction": self._line_loaded_steps / elapsed,
+                "arm_pull_load_fraction": (
+                    self._arm_pull_loaded_steps / elapsed
+                ),
+                "arm_pull_impulse_ns": self._arm_pull_impulse_ns,
+                "rope_core_collision_steps": self._rope_core_collision_steps,
+                "rope_core_collision_fraction": (
+                    self._rope_core_collision_steps / elapsed
+                ),
+                "hand_rope_penetration_steps": self._hand_rope_penetration_steps,
+                "hand_rope_penetration_fraction": (
+                    self._hand_rope_penetration_steps / elapsed
+                ),
                 "chest_load_fraction": self._line_loaded_steps / elapsed,
                 "foot_loop_load_fraction": grounded_fraction,
                 "line_enabled": self._line_enabled,
                 "traction_enabled": self._traction_enabled,
                 "foot_ascender_enabled": self._traction_enabled,
+                "arm_pull_enabled": self._arm_pull_enabled,
             }
         )
         self._previous_progress = progress_absolute
@@ -896,6 +1387,64 @@ class G1FixedLineSlopeEnv(gym.Env):
         """Compatibility alias: disables boot-derived uphill traction."""
         self.set_traction_enabled(enabled)
 
+    def set_arm_pull_enabled(self, enabled: bool) -> None:
+        """Enable the force-balanced handled-ascender traction path."""
+        self._arm_pull_enabled = bool(enabled)
+
+    def rebase_climb_progress(self) -> tuple[np.ndarray, dict[str, float]]:
+        """Start a fresh ascent segment from the current physical stance.
+
+        This resets task counters only.  It does not reset MuJoCo state,
+        prescribe the floating base, or move any rope vertex, and is used
+        after a fall/get-up handoff so the saved climbing PPO can continue.
+        """
+
+        progress = self._progress()
+        self._step_count = 0
+        self._completed_steps = 0
+        self._expected_side = 0
+        self._swing_side = None
+        self._swing_phase = 0.0
+        self._step_power = 0.0
+        self._step_cooldown = 0
+        self._request_hold_steps = 0
+        self._start_progress = progress
+        self._previous_progress = progress
+        self._high_water_progress = progress
+        self._line_ratchet_progress = progress
+        self._hand_ascender_progress = progress + self.hand_ascender_reach
+        self._start_pelvis_z = float(self.data.xpos[self.pelvis_body_id, 2])
+        self._stable_success_steps = 0
+        self._line_loaded_steps = 0
+        self._arm_pull_loaded_steps = 0
+        self._rope_core_collision_steps = 0
+        self._hand_rope_penetration_steps = 0
+        self._grounded_steps = 0
+        self._left_contact_steps = 0
+        self._right_contact_steps = 0
+        self._double_support_steps = 0
+        self._airborne_streak = 0
+        self._maximum_airborne_streak = 0
+        self._last_action.fill(0.0)
+        self._arm_pull_command = 0.0
+        self._last_line_force = 0.0
+        self._last_rope_guide_force = 0.0
+        self._last_arm_pull_force = 0.0
+        self._arm_pull_impulse_ns = 0.0
+        self._last_ground_load = 0.0
+        self._sync_equipment_visuals()
+        mujoco.mj_forward(self.model, self.data)
+        metrics = self._metrics()
+        metrics.update(
+            {
+                "success": False,
+                "failure": False,
+                "line_enabled": self._line_enabled,
+                "traction_enabled": self._traction_enabled,
+            }
+        )
+        return self._get_obs(), metrics
+
     def render(self) -> np.ndarray | None:
         if self.render_mode != "rgb_array":
             return None
@@ -908,6 +1457,9 @@ class G1FixedLineSlopeEnv(gym.Env):
         camera.azimuth = 118
         camera.elevation = -10
         self._renderer.update_scene(self.data, camera=camera)
+        from fixed_line_visuals import add_braided_rope_visual
+
+        add_braided_rope_visual(self._renderer, self.model, self.data)
         return self._renderer.render()
 
     def close(self) -> None:

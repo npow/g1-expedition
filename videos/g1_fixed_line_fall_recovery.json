@@ -1,0 +1,51 @@
+{
+  "video": "videos/g1_fixed_line_fall_recovery.mp4",
+  "climbing_checkpoint": "models/ppo_fixed_line_slope/g1_fixed_line_final.zip",
+  "recovery_checkpoint": "/Users/pasithea/g1-expedition/models/ppo_mountain_recovery/g1_mountain_recovery_final.zip",
+  "success": true,
+  "pre_fall_ascent_m": 0.27383502983559915,
+  "fall_arrest_progress_loss_m": 0.0027178097378716126,
+  "fall_grounded_nonfoot_contact": true,
+  "recovery_policy_steps": 167,
+  "recovery_progress_change_m": -1.0886402498929915,
+  "net_post_fall_progress_m": 1.9809919097396085,
+  "mean_recovery_action": [
+    -0.05515758131775715,
+    0.02157386285838431,
+    -0.003944092059666904,
+    0.09417638070825599
+  ],
+  "regrasp_pelvis_normal_height_m": 0.6185167166407645,
+  "regrasp_torso_upright": 0.955754612613846,
+  "regrasp_linear_speed_mps": 0.06480234213214363,
+  "regrasp_angular_speed_radps": 0.1100547343153745,
+  "post_recovery_climb_segments": 2,
+  "post_recovery_ascent_m": 3.0696321596326,
+  "post_recovery_cycles": 55,
+  "peak_fall_arrest_line_load_n": 700.0,
+  "peak_total_safety_line_load_n": 700.0,
+  "grounded_recovery_lanyard_slack_m": 1.1,
+  "peak_recovery_side_guide_load_n": 0.0,
+  "peak_motor_torque_ratio": 1.0,
+  "maximum_contact_penetration_m": 0.0277350499057052,
+  "root_teleports_after_fall_start": 0,
+  "rope_core_collision_frames": 0,
+  "hand_rope_penetration_frames": 0,
+  "post_climb_rope_core_collision_steps": 0,
+  "post_climb_hand_rope_penetration_steps": 0,
+  "frame_count": 958,
+  "simulation_policy_hz": 50,
+  "video_fps": 25,
+  "camera": {
+    "mode": "fixed_above_slope",
+    "lookat": [
+      0.7392503842049052,
+      -0.0011190966174341001,
+      1.138304666080061
+    ],
+    "distance_m": 4.35,
+    "azimuth_degrees": 120.0,
+    "elevation_degrees": -9.0
+  },
+  "physics_claim": "No floating-base animation: finite disturbance, gravity, MuJoCo contacts, torque-capped motors, deformable rope reactions, learned get-up transfer, then the saved climbing PPO."
+}

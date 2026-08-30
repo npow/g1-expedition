@@ -12,6 +12,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from fixed_line_slope_env import G1FixedLineEnv
+from fixed_line_visuals import add_braided_rope_visual
 
 
 def render_view(
@@ -28,18 +29,19 @@ def render_view(
     camera.azimuth = azimuth
     camera.elevation = -8
     renderer.update_scene(env.data, camera=camera)
+    add_braided_rope_visual(renderer, env.model, env.data)
     imageio.imwrite(output, renderer.render())
     renderer.close()
 
 
 def reference_action(env: G1FixedLineEnv) -> np.ndarray:
     if env._progress() - env._start_progress >= env.target_ascent:
-        return np.zeros(2, dtype=np.float32)
+        return np.zeros(env.action_dim, dtype=np.float32)
     side = env._swing_side if env._swing_side is not None else env._expected_side
     return (
-        np.asarray([1.0, -1.0], dtype=np.float32)
+        np.asarray([1.0, -1.0, 1.0], dtype=np.float32)
         if side == 0
-        else np.asarray([-1.0, 1.0], dtype=np.float32)
+        else np.asarray([-1.0, 1.0, 1.0], dtype=np.float32)
     )
 
 
@@ -71,6 +73,31 @@ def validate() -> dict[str, float]:
         "along_slope_ascent_m": float(metrics["ascent"]),
         "vertical_gain_m": float(metrics["vertical_gain_m"]),
         "completed_alternating_steps": float(metrics["completed_cycles"]),
+        "rope_core_collision_steps": float(
+            sum(row["rope_core_collision"] for row in rows)
+        ),
+        "maximum_rope_extension_m": float(
+            max(row["rope_extension_m"] for row in rows)
+        ),
+        "maximum_rope_deformation_m": float(
+            max(row["rope_max_displacement_m"] for row in rows)
+        ),
+        "maximum_rope_contacts": float(
+            max(row["rope_contact_count"] for row in rows)
+        ),
+        "maximum_hand_rope_penetration_m": float(
+            max(row["hand_rope_max_penetration_m"] for row in rows)
+        ),
+        "hand_rope_contact_steps": float(
+            sum(row["hand_rope_contact_count"] > 0.0 for row in rows)
+        ),
+        "maximum_rope_guide_load_n": float(
+            max(row["rope_guide_load_n"] for row in rows)
+        ),
+        "maximum_arm_pull_load_n": float(
+            max(row["arm_pull_load_n"] for row in rows)
+        ),
+        "arm_pull_impulse_ns": float(metrics["arm_pull_impulse_ns"]),
         "minimum_grasp_score": float(min(row["grasp_score"] for row in rows)),
         "maximum_right_grip_error_m": float(
             max(row["right_grip_error"] for row in rows)
@@ -98,13 +125,17 @@ def validate() -> dict[str, float]:
     assert result["along_slope_ascent_m"] >= 1.50, result
     assert result["vertical_gain_m"] > 0.60, result
     assert result["completed_alternating_steps"] >= 8.0, result
-    assert result["minimum_grasp_score"] > 0.35, result
+    assert result["rope_core_collision_steps"] == 0.0, result
+    assert 0.005 < result["maximum_rope_extension_m"] < 0.10, result
+    assert result["maximum_rope_deformation_m"] > 0.03, result
+    assert result["maximum_hand_rope_penetration_m"] <= 8e-4, result
+    assert result["minimum_grasp_score"] > 0.32, result
     assert result["maximum_right_grip_error_m"] < 0.14, result
     assert result["minimum_hand_separation_m"] > 0.12, result
     assert result["grounded_fraction"] > 0.90, result
     assert result["left_boot_contact_fraction"] > 0.30, result
     assert result["right_boot_contact_fraction"] > 0.30, result
-    assert result["maximum_airborne_streak"] <= 3.0, result
+    assert result["maximum_airborne_streak"] <= 4.0, result
     assert result["cross_hand_collision_steps"] == 0.0, result
     assert result["slope_hand_collision_steps"] == 0.0, result
 

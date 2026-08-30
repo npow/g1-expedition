@@ -41,6 +41,8 @@ def make_env(rank: int, seed: int, randomize: bool = True):
                 "double_support_fraction",
                 "maximum_airborne_streak",
                 "line_load_fraction",
+                "arm_pull_load_fraction",
+                "arm_pull_impulse_ns",
                 "ground_load_bodyweight",
                 "vertical_gain_m",
             ),
@@ -129,7 +131,9 @@ def train(
     model.learn(
         total_timesteps=total_timesteps,
         callback=[checkpoint_callback, eval_callback],
-        progress_bar=True,
+        # Keep training runnable from the minimal hackathon requirements;
+        # SB3's optional tqdm/rich packages are not needed for optimization.
+        progress_bar=False,
         reset_num_timesteps=not bool(resume),
     )
 
@@ -148,6 +152,7 @@ def train(
     metadata = {
         "algorithm": "PPO",
         "training_run_target_timesteps": total_timesteps,
+        "cumulative_training_timesteps": int(model.num_timesteps),
         "selected_checkpoint_timesteps": int(selected_model.num_timesteps),
         "num_parallel_envs": num_envs,
         "seed": seed,
@@ -157,18 +162,23 @@ def train(
         "observation_dim": int(model.observation_space.shape[0]),
         "action_dim": int(model.action_space.shape[0]),
         "policy_network": [256, 256],
-        "actions": ["request_left_uphill_step", "request_right_uphill_step"],
+        "actions": [
+            "request_left_uphill_step",
+            "request_right_uphill_step",
+            "right_arm_jumar_pull",
+        ],
         "arm_controller": (
             "world-frame damped-least-squares IK retaining a right-hand "
-            "ascender grasp; relaxed left balance arm"
+            "ascender grasp plus learned force-balanced Jumar loading; "
+            "relaxed left balance arm"
         ),
         "terrain": "28-degree inclined snow/ice slope",
         "slope_angle_degrees": 28.0,
         "target_along_slope_m": 1.50,
         "uphill_force_source": (
-            "position-actuated alternating leg motion resolved through "
-            "MuJoCo boot/slope contact; no auxiliary uphill force; fixed "
-            "line catches downslope slip only"
+            "coordinated position-actuated leg motion through MuJoCo "
+            "boot/slope contact and a learned right-wrist Jumar pull with "
+            "equal-and-opposite reaction on the deformable fixed line"
         ),
         "resumed_from": resume,
         "selection_source": str(selection_source),

@@ -1,0 +1,46 @@
+{
+  "algorithm": "hierarchical PPO handoff policy over a pretrained WBC prior",
+  "training_run_target_timesteps": 800000,
+  "cumulative_training_timesteps": 911008,
+  "selected_checkpoint_timesteps": 599920,
+  "num_parallel_envs": 24,
+  "seed": 43,
+  "device": "cpu",
+  "observation_dim": 145,
+  "action_dim": 4,
+  "actions": [
+    "left_leg_motion_brake",
+    "right_leg_motion_brake",
+    "waist_motion_brake",
+    "arms_motion_brake"
+  ],
+  "terrain": "28-degree fixed-line snow/ice slope",
+  "physics": "MuJoCo gravity, articulated contacts, torque-capped motors, deformable rope, equal/opposite one-way cam reaction, and a 1.1 m grounded-recovery lanyard",
+  "hidden_recovery_support": false,
+  "floating_base_prescribed_after_reset": false,
+  "prior": {
+    "source": "wbc-mjlab/wbc-g1-deploy",
+    "commit": "6dabf86fddc2b7b429b09e74999732fcde3441f9",
+    "claim": "pretrained upstream prior; slope residual trained here"
+  },
+  "resumed_from": "warmstart/best_model.zip",
+  "selection_source": "models/ppo_mountain_recovery_v3/best/best_model.zip",
+  "cloud_job_id": "6a947232984507d9db4ed46a",
+  "cloud_accelerator": "cpu",
+  "cloud_cpu_cores": "32",
+  "cloud_job_url": "https://huggingface.co/jobs/iteratehack/6a947232984507d9db4ed46a",
+  "selection": {
+    "criterion": "integrated physics gates, not training reward alone",
+    "final_disturbance_torso_pitch_torque_nm": 86.0,
+    "final_disturbance_duration_s": 0.4,
+    "evaluation_report": "models/ppo_mountain_recovery/evaluation_report.json",
+    "post_cloud_finetune": {
+      "additional_timesteps": 50176,
+      "selected_checkpoint_timesteps": 649920,
+      "held_out_reward": 137.34,
+      "held_out_episode_steps": 171,
+      "promoted": false,
+      "reason": "passed nominal case but reduced edge-of-envelope robustness"
+    }
+  }
+}
