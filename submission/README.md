@@ -20,7 +20,8 @@ deck, and every local source needed to edit or regenerate them.
 | 0:10–0:37.5 | Ice-axe self-arrest |
 | 0:37.5–1:01.5 | Fixed-line fall recovery and autonomous get-up |
 | 1:01.5–1:23.5 | Controlled rappel |
-| 1:23.5–1:55.5 | Cooperative lift: overload first, then lift and abort cases |
+| 1:23.5–1:39.5 | Cooperative lift: overload first, then safe lift |
+| 1:39.5–1:55.5 | LiveKit Agents voice commander: telemetry query, grounded response, then “move the log” → confirmed START intent |
 | 1:55.5–2:00 | Closing card |
 
 The pitch carries the problem, extreme-condition motivation, technical
@@ -68,7 +69,7 @@ assembly and speaker notes, and `pitch_script_90s.md` for the readable script.
 | Skill | Primary source clips |
 |---|---|
 | Self-arrest | `g1_self_arrest_diverse_suite.mp4` |
-| Fixed-line recovery/get-up | `g1_fixed_line_fall_recovery.mp4`, `fall_recovery.mp4` |
+| Fixed-line slip recovery/get-up | `slip_recovery_final.mp4`, `fall_recovery.mp4` |
 | Rappel | `g1_rappel_long.mp4`, `g1_rappel_footplant_full_preview.mp4` |
 | Cooperative lift | `tree.mp4`, `lifting_log.mp4`, `failure.mp4` |
 

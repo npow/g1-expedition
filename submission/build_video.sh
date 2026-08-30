@@ -3,7 +3,7 @@ set -euo pipefail
 
 cd "${0:A:h}"
 
-mkdir -p build/segments build/audio
+mkdir -p build/segments build/audio build/contact_sheets
 
 python3 build_assets.py
 
@@ -26,16 +26,18 @@ ffmpeg -hide_banner -loglevel error -i source_videos/g1_self_arrest_diverse_suit
   -filter_complex "[0:v]trim=start=0:end=27.5,setpts=PTS-STARTPTS,fps=30[base];[base][1:v]overlay=0:0:shortest=1,fade=t=in:st=0:d=0.3,fade=t=out:st=27.15:d=0.35[out]" \
   -map "[out]" -t 27.5 "${enc[@]}" build/segments/04_self.mp4 -y
 
-ffmpeg -hide_banner -loglevel error -i source_videos/g1_fixed_line_fall_recovery.mp4 -i source_videos/fall_recovery.mp4 -loop 1 -i build/cards/overlay_fixed.png \
-  -filter_complex "[0:v]trim=start=0:end=16,setpts=PTS-STARTPTS,scale=1920:1080,fps=30[a];[1:v]trim=start=4.09:end=12.09,setpts=PTS-STARTPTS,scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=30[b];[a][b]concat=n=2:v=1:a=0[joined];[joined]tpad=stop_mode=clone:stop_duration=0.034[base];[base][2:v]overlay=0:0:shortest=1,fade=t=in:st=0:d=0.3,fade=t=out:st=23.65:d=0.35[out]" \
+ffmpeg -hide_banner -loglevel error -i source_videos/slip_recovery_final.mp4 -i source_videos/fall_recovery.mp4 -loop 1 -i build/cards/overlay_fixed.png \
+  -filter_complex "[0:v]trim=start=0:end=11.48,setpts=PTS-STARTPTS,scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=30[a];[1:v]trim=start=0:end=12.09,setpts=PTS-STARTPTS,scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=30[b];[a][b]concat=n=2:v=1:a=0[joined];[joined]tpad=stop_mode=clone:stop_duration=0.43[base];[base][2:v]overlay=0:0:shortest=1,fade=t=in:st=0:d=0.3,fade=t=out:st=23.65:d=0.35[out]" \
   -map "[out]" -t 24 "${enc[@]}" build/segments/05_fixed.mp4 -y
 
 ffmpeg -hide_banner -loglevel error -i source_videos/g1_rappel_long.mp4 -i source_videos/g1_rappel_footplant_full_preview.mp4 -loop 1 -i build/cards/overlay_rappel.png \
   -filter_complex "[0:v]trim=start=0:end=17.68,setpts=PTS-STARTPTS,scale=1920:1080,fps=30[a];[1:v]trim=start=0.4:end=4.72,setpts=PTS-STARTPTS,scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=30[b];[a][b]concat=n=2:v=1:a=0[base];[base][2:v]overlay=0:0:shortest=1,fade=t=in:st=0:d=0.3,fade=t=out:st=21.65:d=0.35[out]" \
   -map "[out]" -t 22 "${enc[@]}" build/segments/06_rappel.mp4 -y
 
-ffmpeg -hide_banner -loglevel error -i source_videos/tree.mp4 -i source_videos/lifting_log.mp4 -i source_videos/failure.mp4 -loop 1 -i build/cards/overlay_team.png \
-  -filter_complex "[0:v]trim=start=33:end=42,setpts=PTS-STARTPTS,scale=1920:1080,fps=30[a];[1:v]trim=start=0:end=14.975,setpts=PTS-STARTPTS,scale=1920:1080,fps=30,tpad=stop_mode=clone:stop_duration=0.025[b];[2:v]trim=start=3.5:end=11.5,setpts=PTS-STARTPTS,scale=1920:1080,fps=30[c];[a][b][c]concat=n=3:v=1:a=0[base];[base][3:v]overlay=0:0:shortest=1,fade=t=in:st=0:d=0.3,fade=t=out:st=31.65:d=0.35[out]" \
+ffmpeg -hide_banner -loglevel error -i source_videos/tree.mp4 -i source_videos/lifting_log.mp4 -i source_videos/failure.mp4 \
+  -loop 1 -i build/cards/overlay_team.png -loop 1 -i build/cards/overlay_voice_1.png \
+  -loop 1 -i build/cards/overlay_voice_2.png -loop 1 -i build/cards/overlay_voice_3.png \
+  -filter_complex "[0:v]trim=start=33:end=42,setpts=PTS-STARTPTS,scale=1920:1080,fps=30[a];[1:v]trim=start=0:end=14.975,setpts=PTS-STARTPTS,scale=1920:1080,fps=30,tpad=stop_mode=clone:stop_duration=0.025[b];[2:v]trim=start=3.5:end=11.5,setpts=PTS-STARTPTS,scale=1920:1080,fps=30[c];[a][b][c]concat=n=3:v=1:a=0[base];[base][3:v]overlay=0:0[branded];[branded][4:v]overlay=0:0:enable='between(t,14.5,19)'[v1];[v1][5:v]overlay=0:0:enable='between(t,19,24)'[v2];[v2][6:v]overlay=0:0:enable='between(t,24,32)',fade=t=in:st=0:d=0.3,fade=t=out:st=31.65:d=0.35[out]" \
   -map "[out]" -t 32 "${enc[@]}" build/segments/07_team.mp4 -y
 
 ffmpeg -hide_banner -loglevel error -loop 1 -i build/cards/outro.png -t 4.5 \
@@ -65,7 +67,7 @@ ffmpeg -hide_banner -loglevel error \
   -i build/audio/narration_5.mp3 -i build/audio/narration_6.mp3 \
   -i build/audio/narration_7.mp3 \
   -f lavfi -i "aevalsrc=0.025*(sin(2*PI*55*t)+0.55*sin(2*PI*82.41*t)+0.35*sin(2*PI*110*t)):s=48000:d=120" \
-  -filter_complex "[0:a]adelay=400,volume=1.0[a0];[1:a]adelay=10200,volume=1.0[a1];[2:a]adelay=37700,volume=1.0[a2];[3:a]adelay=61700,volume=1.0[a3];[4:a]adelay=83700,volume=1.0[a4];[5:a]adelay=104200,volume=1.0[a5];[6:a]adelay=113300,volume=1.0[a6];[7:a]lowpass=f=420,afade=t=in:st=0:d=3,afade=t=out:st=116:d=4,volume=0.10[bed];[a0][a1][a2][a3][a4][a5][a6][bed]amix=inputs=8:duration=longest:normalize=0,loudnorm=I=-16:LRA=8:TP=-1.5,atrim=duration=120[aout]" \
+  -filter_complex "[0:a]adelay=400,volume=1.0[a0];[1:a]adelay=10200,volume=1.0[a1];[2:a]adelay=37700,volume=1.0[a2];[3:a]adelay=61700,volume=1.0[a3];[4:a]adelay=83700,volume=1.0[a4];[5:a]adelay=98200,volume=1.0[a5];[6:a]adelay=113300,volume=1.0[a6];[7:a]lowpass=f=420,afade=t=in:st=0:d=3,afade=t=out:st=116:d=4,volume=0.10[bed];[a0][a1][a2][a3][a4][a5][a6][bed]amix=inputs=8:duration=longest:normalize=0,loudnorm=I=-16:LRA=8:TP=-1.5,atrim=duration=120[aout]" \
   -map "[aout]" -c:a aac -b:a 192k -ar 48000 -ac 2 build/soundtrack.m4a -y
 
 ffmpeg -hide_banner -loglevel error -i build/picture_captioned.mp4 -i build/soundtrack.m4a \

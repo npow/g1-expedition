@@ -9,12 +9,13 @@ pptx.title = "G1 Expedition — 90-second pitch";
 pptx.company = "Optimus Prime";
 pptx.lang = "en-US";
 
-const slides = ["pitch_problem.png", "pitch_skills.png", "diagram.png", "evidence.png"];
+const slides = ["pitch_problem.png", "pitch_skills.png", "diagram.png", "livekit_voice.png", "evidence.png"];
 const notes = [
   "0:00–0:18 — Mountains punish small failures. A slip becomes a fall. A cliff turns poor foot placement into a blocked descent. Storm debris demands team handling. The Unitree G1 we bring to the Himalayas needs more than walking—it needs skills that recognize failure, use alpine tools, and recover without forcing unsafe actions.",
   "0:18–0:39 — Optimus Prime built G1 Expedition: four skills spanning the movement, action, and thinking tracks. Ice-axe self-arrest stops uncontrolled slides. Fixed-line recovery gets the robot back on its feet. Rappel couples brake control with foot placement. And coordinated lifting lets two robots share a long load while refusing overloads.",
-  "0:39–1:06 — Self-arrest and fixed-line recovery run in MuJoCo with PPO and a pretrained whole-body get-up prior. Cooperative lifting runs in Isaac Lab: shared MAPPO produces ten commands per G1 while frozen AGILE stabilizes the legs. At inference, every robot publishes one compact pose, velocity, and load stream to a LiveKit room. LiveKit fans those teammate tokens to all actors—one state uplink per robot instead of N-squared links.",
-  "1:06–1:30 — On frozen tests, self-arrest passed nine of nine named and sixty of sixty randomized falls. Rappel completed a two-meter descent and passed seven of ten randomized starts. The lift balanced load fifty-fifty and rejected overload or lost balance. The result is one framework for recovery, descent, and coordination—the parts of the mountain humans should not have to face. Now, the demo.",
+  "0:39–0:57 — Self-arrest and fixed-line recovery use MuJoCo PPO plus a pretrained whole-body get-up prior. Cooperative lifting uses Isaac Lab: shared MAPPO produces ten commands per G1 while frozen AGILE stabilizes the legs.",
+  "0:57–1:13 — At inference, LiveKit carries state and voice. One state uplink per robot feeds every actor. The LiveKit agent answers telemetry questions and turns “move the log” into a confirmed start intent; hold and abort remain available. Voice supervises; local policies control motion.",
+  "1:13–1:30 — Frozen tests arrested nine of nine named and sixty of sixty randomized falls. Rappel descended two meters; the lift split load evenly and refused overload or imbalance. Together, the skills recover, descend, coordinate, and keep the operator in the loop. Now, the demo.",
 ];
 for (const [index, file] of slides.entries()) {
   const slide = pptx.addSlide();

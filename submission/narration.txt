@@ -8,6 +8,6 @@ For cliffs, the rappel policy coordinates braking with foot placement on a sixty
 
 A storm-felled tree can block an approach. One robot first tests the load and refuses the overload. When the mass is safe, two G1s share sling tension, lift together, lower together, and retreat without twisting the log.
 
-And if balance is lost, they abort instead of forcing the task. The same physical loop turns mountain failure modes into recoverable robot behavior.
+LiveKit carries state and voice. Each G1 publishes pose, velocity, and load once. Say “move the log”; after confirmation, the voice agent sends a gated start intent to the robot bridge.
 
-Optimus Prime. Four skills for the parts of the mountain humans should not have to face.
+Optimus Prime. Local policies do the motion. LiveKit connects the team and the operator.

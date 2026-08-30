@@ -1,139 +1,143 @@
 1
-00:00:00,446 --> 00:00:02,772
+00:00:00,435 --> 00:00:02,784
 In the Himalayas, walking is not enough.
 
 2
-00:00:03,059 --> 00:00:06,360
+00:00:03,221 --> 00:00:06,604
 Optimus Prime trained G1 for four failure modes:
 
 3
-00:00:06,600 --> 00:00:09,432
+00:00:06,844 --> 00:00:09,746
 falls, lost footing, cliff descent, and blocked
 
 4
-00:00:09,467 --> 00:00:10,063
+00:00:09,781 --> 00:00:10,211
 routes.
 
 5
-00:00:10,246 --> 00:00:11,702
+00:00:10,246 --> 00:00:11,853
 First: self-arrest.
 
 6
-00:00:11,988 --> 00:00:14,078
+00:00:12,383 --> 00:00:14,658
 During oblique falls up to five meters per
 
 7
-00:00:14,113 --> 00:00:17,026
+00:00:14,693 --> 00:00:17,688
 second, G1 plants the axe, loads the pick,
 
 8
-00:00:17,061 --> 00:00:18,842
+00:00:17,723 --> 00:00:19,596
 and stops before leaving the route.
 
 9
-00:00:19,128 --> 00:00:21,775
+00:00:19,836 --> 00:00:22,506
 Across fixed evaluation gates: nine of nine
 
 10
-00:00:21,810 --> 00:00:24,682
+00:00:22,541 --> 00:00:25,552
 named falls and sixty of sixty randomized falls.
 
 11
-00:00:37,735 --> 00:00:39,283
+00:00:37,735 --> 00:00:39,294
 Next: fall recovery.
 
 12
-00:00:39,465 --> 00:00:41,485
+00:00:39,395 --> 00:00:41,345
 A safety line catches the initial loss of
 
 13
-00:00:41,520 --> 00:00:44,074
+00:00:41,380 --> 00:00:43,865
 traction, the controller uses rope tension to
 
 14
-00:00:44,109 --> 00:00:46,965
+00:00:43,900 --> 00:00:46,640
 recover its stance, and a learned get-up returns
 
 15
-00:00:47,000 --> 00:00:48,706
+00:00:46,675 --> 00:00:48,369
 the robot to its feet so the route
 
 16
-00:00:48,741 --> 00:00:49,662
+00:00:48,404 --> 00:00:49,314
 can continue.
 
 17
-00:01:01,770 --> 00:01:03,836
+00:01:01,770 --> 00:01:03,894
 For cliffs, the rappel policy coordinates
 
 18
-00:01:03,871 --> 00:01:05,508
+00:01:03,929 --> 00:01:05,566
 braking with foot placement on a
 
 19
-00:01:05,543 --> 00:01:07,114
+00:01:05,601 --> 00:01:07,219
 sixty-five-degree face.
 
 20
-00:01:07,470 --> 00:01:09,583
+00:01:07,575 --> 00:01:09,780
 Watch the brake hand hold tension while the
 
 21
-00:01:09,618 --> 00:01:12,381
+00:01:09,815 --> 00:01:12,613
 feet search for stable contacts: a two-meter
 
 22
-00:01:12,416 --> 00:01:14,568
+00:01:12,648 --> 00:01:14,962
 descent with zero positive brake work.
 
 23
-00:01:23,735 --> 00:01:26,084
+00:01:23,746 --> 00:01:26,084
 A storm-felled tree can block an approach.
 
 24
-00:01:26,185 --> 00:01:28,692
+00:01:26,185 --> 00:01:28,820
 One robot first tests the load and refuses
 
 25
-00:01:28,727 --> 00:01:29,555
+00:01:28,855 --> 00:01:29,695
 the overload.
 
 26
-00:01:29,842 --> 00:01:32,082
+00:01:30,132 --> 00:01:32,489
 When the mass is safe, two G1s share
 
 27
-00:01:32,117 --> 00:01:34,590
+00:01:32,524 --> 00:01:35,136
 sling tension, lift together, lower together,
 
 28
-00:01:34,625 --> 00:01:36,521
+00:01:35,171 --> 00:01:37,021
 and retreat without twisting the log.
 
 29
-00:01:44,235 --> 00:01:46,522
-And if balance is lost, they abort instead
+00:01:38,246 --> 00:01:40,433
+LiveKit carries state and voice.
 
 30
-00:01:46,557 --> 00:01:47,838
-of forcing the task.
+00:01:40,673 --> 00:01:44,264
+Each G1 publishes pose, velocity, and load once.
 
 31
-00:01:48,124 --> 00:01:50,400
-The same physical loop turns mountain failure
+00:01:44,551 --> 00:01:45,774
+Say "move the log";
 
 32
-00:01:50,435 --> 00:01:52,923
-modes into recoverable robot behavior.
+00:01:45,874 --> 00:01:48,219
+after confirmation, the voice agent sends a
 
 33
-00:01:53,335 --> 00:01:54,384
-Optimus Prime.
+00:01:48,254 --> 00:01:50,731
+gated start intent to the robot bridge.
 
 34
-00:01:54,484 --> 00:01:56,284
-Four skills for the parts of the mountain
+00:01:53,335 --> 00:01:54,372
+Optimus Prime.
 
 35
-00:01:56,319 --> 00:01:58,087
-humans should not have to face.
+00:01:54,473 --> 00:01:56,172
+Local policies do the motion.
+
+36
+00:01:56,249 --> 00:01:58,598
+LiveKit connects the team and the operator.

@@ -84,15 +84,15 @@ def save_title():
     tx(d, (120, 485), "G1\nEXPEDITION", 76, fill=INK, bold=True, narrow=True, spacing=-4)
     tx(d, (92, 725), "EXTREME-CONDITION ROBOTICS", 28, fill=INK, bold=True)
     tx(d, (92, 780), "Movement  /  Action  /  Thinking", 27, fill=MUTED)
-    d.rectangle((90, 875, 535, 920), fill=INK + (245,))
-    tx(d, (112, 884), "FOUR SKILLS  ·  ONE PHYSICAL LOOP", 21, fill=WHITE, bold=True)
+    d.rectangle((90, 875, 700, 920), fill=INK + (245,))
+    tx(d, (112, 884), "FOUR SKILLS  ·  LIVEKIT STATE + VOICE", 21, fill=WHITE, bold=True)
     im.save(OUT / "title.png")
 
 
-def arrow(d, x1, y1, x2, y2):
-    d.line((x1, y1, x2, y2), fill=ORANGE + (255,), width=6)
+def arrow(d, x1, y1, x2, y2, color=ORANGE):
+    d.line((x1, y1, x2, y2), fill=color + (255,), width=6)
     a, s = math.atan2(y2-y1, x2-x1), 18
-    d.polygon([(x2,y2),(x2-s*math.cos(a-.55),y2-s*math.sin(a-.55)),(x2-s*math.cos(a+.55),y2-s*math.sin(a+.55))], fill=ORANGE + (255,))
+    d.polygon([(x2,y2),(x2-s*math.cos(a-.55),y2-s*math.sin(a-.55)),(x2-s*math.cos(a+.55),y2-s*math.sin(a+.55))], fill=color + (255,))
 
 
 def save_diagram():
@@ -164,6 +164,100 @@ def save_evidence():
     im.save(OUT / "evidence.png")
 
 
+def save_livekit_voice():
+    im = paper_bg(); d = ImageDraw.Draw(im, "RGBA"); technical_marks(d)
+    tx(d, (90, 112), "LIVEKIT CONNECTS THE EXPEDITION", 61, fill=INK, bold=True, narrow=True)
+    tx(d, (94, 188), "ONE ROOM  /  TWO EXPLICIT CONTROL PLANES", 25, fill=ORANGE, bold=True)
+
+    # Robot state plane.
+    d.rectangle((82, 265, 1838, 555), fill=WHITE + (246,), outline=INK + (255,), width=3)
+    d.rectangle((82, 265, 1838, 335), fill=BLUE + (248,))
+    tx(d, (112, 284), "ROBOT STATE PLANE  /  LIVEKIT DATA TRACKS", 29, fill=WHITE, bold=True, narrow=True)
+    top_boxes = [
+        (112, 380, 375, "G1 TEAM", "G1 0  ·  G1 1  ·  G1 N"),
+        (505, 370, 865, "LIVEKIT DATA TRACKS", "63-BYTE STATE PACKET\npose · velocity · load"),
+        (1000, 380, 1345, "TEAMMATE TOKENS", "N−1 tokens / actor"),
+        (1480, 370, 1808, "LOCAL POLICY × N", "shared MAPPO + local servo"),
+    ]
+    for x1,y1,x2,head,detail in top_boxes:
+        d.rectangle((x1,y1,x2,515), fill=(ORANGE if "LIVEKIT" in head else INK) + (248,), outline=INK + (255,), width=3)
+        tx(d, ((x1+x2)//2,y1+28), head, 24, fill=(INK if "LIVEKIT" in head else WHITE), bold=True, narrow=True, anchor="ma")
+        tx(d, ((x1+x2)//2,y1+78), detail, 18, fill=(INK if "LIVEKIT" in head else ORANGE), bold=True, anchor="ma", spacing=5)
+    arrow(d, 400, 444, 480, 444)
+    arrow(d, 890, 444, 975, 444)
+    arrow(d, 1370, 444, 1455, 444)
+
+    # Voice plane. The query path returns an answer; only command intents enter the gate.
+    d.rectangle((82, 605, 1838, 885), fill=WHITE + (246,), outline=INK + (255,), width=3)
+    d.rectangle((82, 605, 1838, 675), fill=ORANGE + (248,))
+    tx(d, (112, 624), "OPERATOR VOICE PLANE  /  LIVEKIT AGENTS + INFERENCE", 29, fill=INK, bold=True, narrow=True)
+    bottom_boxes = [
+        (112, 720, 345, "OPERATOR", "ask status\n“move the log”"),
+        (535, 705, 865, "LIVEKIT AGENTS", "real-time STT · LLM · TTS\ntelemetry tools"),
+        (1000, 720, 1345, "DETERMINISTIC GATE", "confirm start · freshness"),
+        (1480, 720, 1808, "ROBOT BRIDGE", "queue START intent"),
+    ]
+    for x1,y1,x2,head,detail in bottom_boxes:
+        d.rectangle((x1,y1,x2,850), fill=(ORANGE if "LIVEKIT" in head else INK) + (248,), outline=INK + (255,), width=3)
+        tx(d, ((x1+x2)//2,y1+26), head, 24, fill=(INK if "LIVEKIT" in head else WHITE), bold=True, narrow=True, anchor="ma")
+        tx(d, ((x1+x2)//2,y1+73), detail, 18, fill=(INK if "LIVEKIT" in head else ORANGE), bold=True, anchor="ma", spacing=5)
+    arrow(d, 370, 760, 510, 760)
+    arrow(d, 510, 815, 370, 815, color=BLUE)
+    tx(d, (440, 724), "QUESTION", 16, fill=BLUE, bold=True, anchor="ma")
+    tx(d, (440, 837), "GROUNDED ANSWER", 16, fill=BLUE, bold=True, anchor="ma")
+    arrow(d, 890, 785, 975, 785)
+    tx(d, (932, 748), "COMMAND INTENT", 14, fill=ORANGE, bold=True, anchor="ma")
+    arrow(d, 1370, 785, 1455, 785)
+    # State feeds the agent's telemetry tools; the bridge only queues work for local policy supervisors.
+    arrow(d, 685, 555, 685, 685, color=BLUE)
+    tx(d, (708, 568), "LIVE TELEMETRY", 15, fill=BLUE, bold=True)
+    arrow(d, 1644, 700, 1644, 575, color=BLUE)
+    tx(d, (1667, 575), "SUPERVISORY ONLY", 15, fill=BLUE, bold=True)
+
+    d.rectangle((240, 930, 1680, 1006), fill=INK + (248,))
+    tx(d, (960, 955), "VOICE SUPERVISES  ·  LOCAL POLICIES CONTROL MOTION", 30, fill=WHITE, bold=True, anchor="mm")
+    im.save(OUT / "livekit_voice.png")
+
+
+def voice_demo_overlays():
+    def base_panel(title: str):
+        im = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(im, "RGBA")
+        d.rounded_rectangle((1060, 72, 1875, 700), radius=22, fill=INK + (236,), outline=ORANGE + (255,), width=4)
+        d.rectangle((1060, 72, 1875, 155), fill=ORANGE + (248,))
+        tx(d, (1100, 91), "LIVEKIT AGENTS VOICE", 34, fill=INK, bold=True, narrow=True)
+        tx(d, (1835, 111), "REAL-TIME STT · LLM · TTS", 16, fill=INK, bold=True, anchor="ra")
+        tx(d, (1100, 180), title, 20, fill=ORANGE, bold=True)
+        return im, d
+
+    im, d = base_panel("TELEMETRY-GROUNDED QUESTION")
+    d.rounded_rectangle((1110, 245, 1815, 395), radius=18, fill=WHITE + (245,))
+    tx(d, (1145, 270), "OPERATOR", 22, fill=BLUE, bold=True)
+    tx(d, (1145, 322), "“How is the load?”", 31, fill=INK, bold=True)
+    tx(d, (1100, 615), "VOICE → LIVEKIT ROOM → TELEMETRY TOOL", 20, fill=WHITE, bold=True)
+    im.save(OUT / "overlay_voice_1.png")
+
+    im, d = base_panel("ANSWERED FROM THE SHARED STATE BUS")
+    d.rounded_rectangle((1110, 235, 1815, 480), radius=18, fill=WHITE + (245,))
+    tx(d, (1145, 260), "EXPEDITION CONTROL", 22, fill=ORANGE, bold=True)
+    tx(d, (1145, 312), "G1 0: 50%   ·   G1 1: 50%", 29, fill=INK, bold=True)
+    tx(d, (1145, 370), "2 / 2 LINKS FRESH", 28, fill=BLUE, bold=True)
+    tx(d, (1145, 425), "Load distribution nominal.", 23, fill=INK)
+    tx(d, (1100, 615), "NO INVENTED STATUS  ·  LIVE TELEMETRY ONLY", 20, fill=WHITE, bold=True)
+    im.save(OUT / "overlay_voice_2.png")
+
+    im, d = base_panel("VOICE → CONFIRMED MISSION COMMAND")
+    d.rounded_rectangle((1110, 220, 1815, 415), radius=18, fill=WHITE + (245,))
+    tx(d, (1145, 249), "OPERATOR", 20, fill=BLUE, bold=True)
+    tx(d, (1145, 286), "“Move the log.”", 27, fill=INK, bold=True)
+    tx(d, (1145, 332), "AGENT:  “Say confirm start.”", 22, fill=ORANGE, bold=True)
+    tx(d, (1145, 372), "OPERATOR:  “Confirm start.”", 22, fill=BLUE, bold=True)
+    d.rectangle((1110, 448, 1815, 555), fill=ORANGE + (248,))
+    tx(d, (1462, 470), "DETERMINISTIC GATE  →  ROBOT BRIDGE", 22, fill=INK, bold=True, anchor="ma")
+    tx(d, (1462, 515), "START INTENT QUEUED", 29, fill=INK, bold=True, narrow=True, anchor="ma")
+    tx(d, (1100, 615), "VOICE COMMANDS MISSIONS  ·  LOCAL POLICY COMMANDS JOINTS", 19, fill=WHITE, bold=True)
+    im.save(OUT / "overlay_voice_3.png")
+
+
 def save_outro():
     im = theme_bg(); d = ImageDraw.Draw(im, "RGBA"); technical_marks(d)
     d.rectangle((75, 185, 820, 780), fill=ORANGE + (245,))
@@ -171,7 +265,9 @@ def save_outro():
     d.line((112,475,755,475),fill=INK+(255,),width=5)
     tx(d,(112,515),"G1 EXPEDITION",44,fill=INK,bold=True,narrow=True)
     tx(d,(112,600),"Training robots for the parts\nof the mountain humans\nshould not have to face.",31,fill=INK,bold=True,spacing=10)
-    tx(d,(90,900),"HIMALAYA ROBOTICS HACKATHON 2026",25,fill=INK,bold=True)
+    tx(d,(90,875),"HIMALAYA ROBOTICS HACKATHON 2026",25,fill=INK,bold=True)
+    d.rectangle((90, 930, 770, 980), fill=INK + (245,))
+    tx(d,(118,942),"LIVEKIT AGENTS + INFERENCE  ·  STATE + VOICE",21,fill=ORANGE,bold=True)
     im.save(OUT / "outro.png")
 
 
@@ -227,11 +323,11 @@ def montage_overlay():
         d.rectangle((x,y,x+420,y+64),fill=color+(245,))
         tx(d,(x+20,y+16),v,27,fill=WHITE,bold=True)
     d.rectangle((655,1013,1265,1068),fill=INK+(238,))
-    tx(d,(960,1025),"MOVEMENT  /  ACTION  /  THINKING",22,fill=ORANGE,bold=True,anchor="ma")
+    tx(d,(960,1025),"MOVEMENT  /  ACTION  /  THINKING  /  LIVEKIT VOICE",22,fill=ORANGE,bold=True,anchor="ma")
     im.save(OUT/"overlay_montage.png")
 
 
-save_title(); save_diagram(); save_evidence(); save_outro(); save_pitch_problem(); save_pitch_skills(); montage_overlay()
+save_title(); save_diagram(); save_evidence(); save_livekit_voice(); save_outro(); save_pitch_problem(); save_pitch_skills(); montage_overlay(); voice_demo_overlays()
 overlay("self","01  ICE-AXE SELF-ARREST","Stop an uncontrolled fall before the robot leaves the route","9/9 + 60/60",BLUE)
 overlay("fixed","02  FALL RECOVERY","Load the line, regain footing, continue the route","recover + continue",ORANGE)
 overlay("rappel","03  CONTROLLED RAPPEL","Coordinate brake friction with stable foot placements","2.00 m descent",BLUE)
