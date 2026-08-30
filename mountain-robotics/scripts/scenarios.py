@@ -3,8 +3,10 @@
 Each row is a claim made in the README or on stage; this is what checks that
 the claim is still true after a change.
 """
+from pathlib import Path
 import sys, time
-sys.path.insert(0, ".")
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "_hfjob"))
 from alpine_lift.mission import Mission, Disturbance
 from alpine_lift.scene import SceneConfig
 

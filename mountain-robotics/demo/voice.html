@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Alpine Lift · Voice Command</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #f2f5f7;
+      --muted: #9aa9ae;
+      --panel: rgba(11, 18, 19, .88);
+      --line: rgba(205, 231, 227, .14);
+      --ice: #a7f1e6;
+      --good: #63e6a7;
+      --warn: #ffca72;
+      --bad: #ff756f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% -10%, rgba(77, 151, 143, .28), transparent 34rem),
+        linear-gradient(145deg, #10191a 0%, #071011 55%, #0c1516 100%);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: -.012em;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .13;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.28'/%3E%3C/svg%3E");
+    }
+    main { width: min(1460px, 100%); margin: 0 auto; padding: 26px 30px 28px; }
+    header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .brand { display: flex; align-items: center; gap: 13px; text-transform: uppercase; letter-spacing: .15em; font-size: 12px; font-weight: 800; }
+    .mark { width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid rgba(167,241,230,.5); border-radius: 50%; color: var(--ice); }
+    .eyebrow { color: var(--ice); text-transform: uppercase; letter-spacing: .15em; font-weight: 800; font-size: 11px; }
+    .status { display: inline-flex; align-items: center; gap: 9px; border: 1px solid var(--line); border-radius: 100px; padding: 9px 13px; background: rgba(8,16,17,.7); font: 750 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; text-transform: uppercase; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--good); box-shadow: 0 0 16px var(--good); }
+    .status.listening .dot { background: var(--warn); box-shadow: 0 0 16px var(--warn); animation: pulse .8s infinite alternate; }
+    .status.error .dot, .status.aborted .dot, .status.failed .dot { background: var(--bad); box-shadow: 0 0 16px var(--bad); }
+    @keyframes pulse { to { transform: scale(1.7); opacity: .65; } }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(340px, .72fr); gap: 18px; }
+    .card { border: 1px solid var(--line); background: var(--panel); border-radius: 18px; box-shadow: 0 26px 80px rgba(0,0,0,.34); backdrop-filter: blur(18px); overflow: hidden; }
+    .feed { position: relative; min-height: 0; aspect-ratio: 16 / 9; background: #080d0e; }
+    .feed img, .feed video { width: 100%; height: 100%; display: block; object-fit: cover; }
+    .feed video { display: none; }
+    .feed::after { content: ""; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,.05), inset 0 -100px 100px rgba(0,0,0,.18); }
+    .live-badge { position: absolute; z-index: 2; right: 17px; bottom: 16px; padding: 8px 10px; border-radius: 7px; background: rgba(5,11,12,.8); border: 1px solid var(--line); font: 800 10px/1 ui-monospace, monospace; letter-spacing: .12em; }
+    .caption { padding: 16px 19px; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-top: 1px solid var(--line); }
+    .caption strong { display: block; font-size: 15px; margin-bottom: 4px; }
+    .caption span { color: var(--muted); font-size: 12px; }
+    .side { padding: 18px 24px; display: flex; flex-direction: column; }
+    h1 { margin: 7px 0 7px; max-width: 11ch; font-size: clamp(34px, 3.35vw, 49px); line-height: .96; font-weight: 680; letter-spacing: -.052em; }
+    .sub { color: var(--muted); font-size: 13px; line-height: 1.42; margin: 0 0 14px; max-width: 42ch; }
+    .say { border: 1px solid rgba(167,241,230,.22); background: rgba(167,241,230,.055); border-radius: 13px; padding: 11px 14px; margin-bottom: 9px; }
+    .say small { display: block; margin-bottom: 6px; color: var(--ice); text-transform: uppercase; letter-spacing: .14em; font-size: 9px; font-weight: 850; }
+    .say q { font-size: 19px; font-weight: 620; quotes: "“" "”"; }
+    .controls { display: grid; grid-template-columns: 1fr auto; gap: 9px; }
+    button { appearance: none; border: 0; border-radius: 11px; padding: 12px 16px; font: 750 13px/1 inherit; cursor: pointer; transition: transform .16s, filter .16s, opacity .16s; }
+    button:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+    button:disabled { opacity: .4; cursor: default; transform: none; }
+    .primary { color: #061413; background: var(--ice); }
+    .fallback { color: var(--ink); border: 1px solid var(--line); background: #182425; }
+    .hazards { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 7px; }
+    .gust { color: #ffe1a8; border: 1px solid rgba(255,202,114,.25); background: rgba(255,202,114,.08); }
+    .ice { color: #b0f4ff; border: 1px solid rgba(167,241,230,.3); background: rgba(167,241,230,.09); }
+    .heavy { color: #f6c0ff; border: 1px solid rgba(230,170,255,.28); background: rgba(230,170,255,.08); }
+    .stop { color: #ffd4d1; border: 1px solid rgba(255,117,111,.25); background: rgba(255,117,111,.08); }
+    .tool-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 7px; }
+    .status-btn { color: #d0e4e9; border: 1px solid var(--line); background: #152224; }
+    .reset-btn { color: #d0e4e9; border: 1px solid var(--line); background: #152224; }
+    .transcript { min-height: 25px; margin: 9px 0 10px; color: var(--muted); font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .transcript b { color: var(--ink); font-weight: 600; }
+    .telemetry { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 13px; overflow: hidden; margin-top: auto; }
+    .metric { padding: 9px 10px; min-width: 0; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .metric:nth-child(3n) { border-right: 0; }
+    .metric:nth-child(n+4) { border-bottom: 0; }
+    .metric label { display: block; color: var(--muted); text-transform: uppercase; font: 750 8px/1 ui-monospace, monospace; letter-spacing: .09em; margin-bottom: 7px; }
+    .metric strong { font: 660 17px/1 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: nowrap; }
+    .timeline { grid-column: 1 / -1; padding: 18px 19px 15px; }
+    .timeline-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 13px; }
+    .timeline-head span { color: var(--muted); font: 11px ui-monospace, monospace; }
+    .phases { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; }
+    .phase { height: 5px; border-radius: 10px; background: #334143; transition: background .25s, box-shadow .25s; }
+    .phase.done { background: var(--good); }
+    .phase.active { background: var(--ice); box-shadow: 0 0 13px rgba(167,241,230,.6); }
+    .phase-labels { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; margin-top: 8px; }
+    .phase-labels span { overflow: hidden; color: #6f8084; font: 700 7px/1 ui-monospace, monospace; text-align: center; }
+    @media (max-width: 900px) {
+      main { padding: 18px; }
+      .layout { grid-template-columns: 1fr; }
+      .timeline { grid-column: auto; }
+      h1 { max-width: none; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="brand"><span class="mark">▲</span> Alpine coordinated lift</div>
+    <div id="status" class="status armed"><span class="dot"></span><span id="statusText">System armed</span></div>
+  </header>
+
+  <section class="layout">
+    <div class="card">
+      <div class="feed">
+        <div id="liveBadge" class="live-badge">SIMULATION · READY</div>
+        <img id="feed" src="/assets/poster.png" alt="Two Unitree G1 robots performing a coordinated log lift">
+        <video id="fallbackVideo" src="/media/lifting_log.mp4" muted playsinline preload="metadata"></video>
+      </div>
+      <div class="caption">
+        <div><strong id="message">Waiting for operator command</strong><span id="reason">No robot motion without a confirmed intent.</span></div>
+        <span id="clock">00.00 s</span>
+      </div>
+    </div>
+
+    <aside class="card side">
+      <div class="eyebrow">LiveKit voice → tool → safe motion</div>
+      <h1>Move the obstacle. Keep the team upright.</h1>
+      <p class="sub">Two G1 humanoids weigh an unknown log through four sling constraints, make a go/no-go decision, then lift as one virtual object.</p>
+
+      <div class="say"><small>Primary LiveKit commands</small><q>Lift the log</q> · <q>Add a wind gust</q> · <q>Simulate verglas</q> · <q>Test heavy load</q></div>
+      <div class="controls">
+        <button id="listen" class="primary" data-testid="listen">Browser mic fallback</button>
+        <button id="run" class="fallback" data-testid="run">Lift log</button>
+      </div>
+      <div class="hazards">
+        <button id="gust" class="gust" data-testid="gust" disabled>Add 45 N wind gust</button>
+        <button id="ice" class="ice" data-testid="ice" disabled>Simulate verglas ice</button>
+      </div>
+      <div class="hazards">
+        <button id="heavy" class="heavy" data-testid="heavy">Test 30kg load (decline)</button>
+        <button id="stop" class="stop" data-testid="stop" disabled>Operator stop</button>
+      </div>
+      <div class="tool-bar">
+        <button id="statusBtn" class="status-btn" data-testid="status-btn">Status report</button>
+        <button id="resetBtn" class="reset-btn" data-testid="reset-btn">Reset system</button>
+      </div>
+      <div id="transcript" class="transcript">LiveKit agent connecting · browser fallback ready</div>
+
+      <div class="telemetry">
+        <div class="metric"><label>Phase</label><strong id="phase">READY</strong></div>
+        <div class="metric"><label>Lift</label><strong id="lift">+0.0 cm</strong></div>
+        <div class="metric"><label>Tilt</label><strong id="tilt">0.00°</strong></div>
+        <div class="metric"><label>Load share A/B</label><strong id="share">50 / 50</strong></div>
+        <div class="metric"><label>Mass estimate</label><strong id="mass">— kg</strong></div>
+        <div class="metric"><label>Peak hand</label><strong id="force">0 N</strong></div>
+      </div>
+    </aside>
+
+    <div class="card timeline">
+      <div class="timeline-head"><div><span class="eyebrow">Mission sequence</span></div><span>Shared object frame · 50 Hz control</span></div>
+      <div id="phases" class="phases"></div>
+      <div id="phaseLabels" class="phase-labels"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+  const phaseNames = ["READY", "REACH", "CLIP", "TENSION", "LIFT", "HOLD", "SHIFT", "LOWER", "RELEASE", "RETREAT"];
+  const $ = (id) => document.getElementById(id);
+  phaseNames.forEach((name) => {
+    const bar = document.createElement("span"); bar.className = "phase"; bar.dataset.phase = name; $("phases").appendChild(bar);
+    const label = document.createElement("span"); label.textContent = name; $("phaseLabels").appendChild(label);
+  });
+
+  let listening = false;
+  let lastFrame = -1;
+  let fallbackPlaying = false;
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+  if (recognition) {
+    recognition.lang = "en-US";
+    recognition.interimResults = true;
+    recognition.continuous = false;
+    recognition.onstart = () => {
+      listening = true;
+      $("status").className = "status listening";
+      $("statusText").textContent = "Listening";
+      $("listen").textContent = "Listening…";
+      $("transcript").textContent = "Listening for “lift the log”…";
+    };
+    recognition.onresult = (event) => {
+      let phrase = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) phrase += event.results[i][0].transcript;
+      $("transcript").innerHTML = `Heard · <b>${escapeHtml(phrase)}</b>`;
+      if (event.results[event.results.length - 1].isFinal) sendCommand(phrase);
+    };
+    recognition.onerror = (event) => {
+      $("transcript").textContent = `Microphone ${event.error}. Use Run demo as the zero-risk fallback.`;
+    };
+    recognition.onend = () => {
+      listening = false;
+      $("listen").textContent = "Browser mic fallback";
+    };
+  } else {
+    $("listen").disabled = true;
+    $("transcript").textContent = "Speech recognition is unavailable in this browser. Run demo is ready.";
+  }
+
+  function escapeHtml(value) {
+    const el = document.createElement("span"); el.textContent = value; return el.innerHTML;
+  }
+
+  async function sendCommand(phrase) {
+    try {
+      const response = await fetch("/api/command", {
+        method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({phrase})
+      });
+      const body = await response.json();
+      $("transcript").innerHTML = `${body.ok ? "Confirmed" : "Ignored"} · <b>${escapeHtml(phrase)}</b>`;
+      if (body.ok && body.intent === "lift_log") {
+        speak("Command confirmed. Weighing the load, then lifting the log.");
+        startVisual();
+      } else if (body.ok && body.intent === "heavy_load") {
+        speak("Heavy load test initiated. Weighing obstacle for safety validation.");
+        startVisual();
+      } else if (body.ok && body.intent === "wind_gust") {
+        speak("Wind test accepted. Applying a forty five newton gust in the loaded phase.");
+      } else if (body.ok && body.intent === "verglas_ice") {
+        speak("Verglas surface ice armed. Ground friction dropping to zero point four five.");
+      } else if (body.ok && body.intent === "status") {
+        speak(body.message);
+      } else if (body.ok && body.intent === "reset") {
+        speak("System reset to ready stance.");
+      } else if (body.ok && body.intent === "stop") {
+        speak("Controlled set-down initiated.");
+      }
+    } catch (error) {
+      $("transcript").textContent = `Control link unavailable: ${error.message}`;
+    }
+  }
+
+  function speak(text) {
+    if (!("speechSynthesis" in window)) return;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+  }
+
+  function startVisual() {
+    $("fallbackVideo").currentTime = 0;
+    fallbackPlaying = false;
+  }
+
+  $("listen").addEventListener("click", () => { if (recognition && !listening) recognition.start(); });
+  $("run").addEventListener("click", () => sendCommand("lift the log"));
+  $("heavy").addEventListener("click", () => sendCommand("test heavy load"));
+  $("gust").addEventListener("click", () => sendCommand("add a wind gust"));
+  $("ice").addEventListener("click", () => sendCommand("simulate verglas"));
+  $("stop").addEventListener("click", () => sendCommand("operator stop"));
+  $("statusBtn").addEventListener("click", () => sendCommand("status report"));
+  $("resetBtn").addEventListener("click", () => sendCommand("reset system"));
+
+  function renderStatus(s) {
+    const state = listening ? "listening" : s.state;
+    $("status").className = `status ${state}`;
+    $("statusText").textContent = listening ? "Listening" : (s.livekit_connected && s.state === "armed" ? "LiveKit armed" : ({
+      armed: "System armed", starting: "Initializing", running: "Live mission",
+      success: "Mission complete", aborted: "Safe abort", failed: "Mission failed", error: "Fallback active"
+    }[s.state] || s.state));
+    $("message").textContent = s.message;
+    $("reason").textContent = s.go_reason || "Four-hand force and balance monitoring active.";
+    $("clock").textContent = `${Number(s.elapsed).toFixed(2).padStart(5, "0")} s`;
+    $("phase").textContent = s.phase;
+    $("lift").textContent = `${s.lift_cm >= 0 ? "+" : ""}${Number(s.lift_cm).toFixed(1)} cm`;
+    $("tilt").textContent = `${Number(s.tilt_deg).toFixed(2)}°`;
+    $("share").textContent = `${Math.round(s.share_a)} / ${Math.round(100 - s.share_a)}`;
+    $("mass").textContent = s.mass_kg > 0.2 ? `${Number(s.mass_kg).toFixed(1)} kg` : "— kg";
+    $("force").textContent = `${Math.round(s.peak_force_n)} N`;
+    $("stop").disabled = !["starting", "running"].includes(s.state);
+    $("gust").disabled = s.state !== "running" || s.gust_status === "45 N active";
+    $("gust").textContent = s.gust_status === "45 N active" ? "Wind gust · 45 N active" :
+      (s.gust_status === "armed" ? "Wind gust armed" : "Add 45 N wind gust");
+    $("ice").disabled = s.state !== "running" || (s.terrain_status && s.terrain_status.includes("active"));
+    $("ice").textContent = (s.terrain_status && s.terrain_status.includes("active")) ? "Verglas active (μ=0.45)" :
+      ((s.terrain_status && s.terrain_status.includes("armed")) ? "Verglas armed" : "Simulate verglas ice");
+    $("run").disabled = ["starting", "running"].includes(s.state);
+    $("heavy").disabled = ["starting", "running"].includes(s.state);
+    const voice = s.livekit_connected ? "LIVEKIT" : "BROWSER FALLBACK";
+    $("liveBadge").textContent = `${voice} · ${s.mode.toUpperCase()} · ${s.phase}`;
+
+    const idx = phaseNames.indexOf(s.phase);
+    document.querySelectorAll(".phase").forEach((el, i) => {
+      el.className = `phase${i < idx ? " done" : ""}${i === idx ? " active" : ""}`;
+    });
+
+    if (s.mode.startsWith("recorded") && ["starting", "running"].includes(s.state)) {
+      $("feed").style.display = "none";
+      $("fallbackVideo").style.display = "block";
+      if (!fallbackPlaying) { $("fallbackVideo").play().catch(() => {}); fallbackPlaying = true; }
+    } else if (s.frame_seq > 0) {
+      $("fallbackVideo").style.display = "none";
+      $("feed").style.display = "block";
+      if (s.frame_seq !== lastFrame) {
+        lastFrame = s.frame_seq;
+        $("feed").src = `/api/frame.jpg?seq=${s.frame_seq}`;
+      }
+    }
+  }
+
+  async function poll() {
+    try {
+      const response = await fetch("/api/status", {cache: "no-store"});
+      renderStatus(await response.json());
+    } catch (_) {
+      $("statusText").textContent = "Control link lost";
+      $("status").className = "status error";
+    }
+  }
+  poll();
+  setInterval(poll, 180);
+</script>
+</body>
+</html>

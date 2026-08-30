@@ -13,6 +13,7 @@ dependencies = [
 
 [project.optional-dependencies]
 train = ["torch>=2.4", "huggingface_hub>=0.34"]
+voice = ["livekit-agents~=1.5", "python-dotenv>=1.0"]
 
 [tool.setuptools.packages.find]
 include = ["alpine_lift*"]
