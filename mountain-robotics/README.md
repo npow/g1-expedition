@@ -45,7 +45,7 @@ mountain does next, move it off the trail line, and set it down.
 |---|---|
 | **Track** | Track 1 (Movement) + Track 3 (Thinking) |
 | **Demo video** | `out/submission.mp4` — 65 s, built by `scripts/make_reel.py` |
-| **Live demo** | `python scripts/live.py` — runs on the laptop, no GPU |
+| **Live demo** | `python scripts/voice_demo.py --open` — voice console + live physics |
 | **Clips** | `out/01_nominal` · `02_nogo` · `03_gust` · `04_hands` · `05_front` |
 | **Reproduce every claim** | `python scripts/scenarios.py` — 30 seconds |
 
@@ -79,6 +79,48 @@ PYTHONPATH=. .venv/bin/python scripts/make_reel.py     # -> out/submission.mp4
 ```
 
 Everything above runs on a MacBook Air M1 at ~7× real time. No GPU required.
+
+### Voice-controlled live demo
+
+The stage-safe demo is a local browser console backed by the actual MuJoCo
+lift, with a recorded-visual fallback if the laptop cannot create an offscreen
+graphics context. The control service and button fallback need no network;
+browser speech recognition and the optional LiveKit path may. Robot motion does
+not start until the command boundary recognizes an explicit lift intent.
+
+```bash
+# opens http://127.0.0.1:8765
+PYTHONPATH=. .venv/bin/python scripts/voice_demo.py --open
+```
+
+Click **Start listening**, allow microphone access, and say **“lift the log.”**
+The **Run demo** button exercises the identical command path when venue audio
+is unreliable. **Operator stop** requests the controller's controlled set-down
+instead of killing the simulation.
+
+The primary voice path is a LiveKit Agent with safety-bounded function tools:
+`lift_log`, `test_heavy_load`, `simulate_verglas_ice`, `add_wind_gust`, `telemetry_status`, `reset_system`, and `operator_stop`. The local service strictly validates every intent before changing the simulation:
+
+```bash
+uv pip install --python .venv/bin/python '.[voice]'
+# put LIVEKIT_URL, LIVEKIT_API_KEY, and LIVEKIT_API_SECRET in .env.local
+.venv/bin/python scripts/run_livekit_demo.py
+```
+
+The control service defaults to `http://127.0.0.1:8765`. Set
+`ALPINE_CONTROL_URL` for another host and use the same `ALPINE_CONTROL_TOKEN`
+on both processes when the endpoint is not laptop-local.
+
+Supported voice commands:
+- **“Lift the log”**: Initiates autonomous coordinated lift (19 cm) and clearance.
+- **“Test heavy load”**: Autonomous weigh-in (Track 3 Thinking) and safety decline of a 30 kg log.
+- **“Simulate verglas”**: Himalayan ice friction drop ($\mu \to 0.45$) underfoot.
+- **“Add a wind gust”**: 45 N crosswind lateral drag during the loaded phase.
+- **“Status report”**: Spoken readout of phase, measured load, tilt angle, load sharing, and peak force.
+- **“Reset system”**: Returns robots to the armed ready stance.
+- **“Operator stop”**: Emergency high-priority controlled set-down.
+
+See [`DEMO.md`](DEMO.md) for the two-minute stage runbook and architecture details.
 
 ---
 

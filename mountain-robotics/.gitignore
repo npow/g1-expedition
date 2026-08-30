@@ -6,3 +6,6 @@ out/*.mp4
 out/*.png
 _hfjob/
 MUJOCO_LOG.TXT
+build/
+.DS_Store
+*.egg-info/
