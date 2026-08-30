@@ -194,3 +194,12 @@ PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest
 
 The Unitree G1 model under `assets/unitree_g1/` retains its BSD-3-Clause
 license and attribution.
+
+## Related work
+
+[abhijitbetigeri/HimalayaExpedition](https://github.com/abhijitbetigeri/HimalayaExpedition)
+— Robotic Expedition in Himalayas. Companion project covering the wider
+Himalayan robotics track: ice/snow locomotion under domain randomization, wind
+loading, and fixed-line ascent on MuJoCo Playground (MJX/GPU), alongside the
+LiveKit voice interface used in this demo.
+

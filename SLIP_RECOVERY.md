@@ -731,3 +731,12 @@ Two things worth knowing if you re-tune it:
   at. At x1.0 the number is not about the policy.
 - Widen the action space once a policy stands unaided.
 - Nothing here is pushed. This is npow's private repo.
+
+## Related work
+
+[abhijitbetigeri/HimalayaExpedition](https://github.com/abhijitbetigeri/HimalayaExpedition)
+— Robotic Expedition in Himalayas. Companion project covering the wider
+Himalayan robotics track: ice/snow locomotion under domain randomization, wind
+loading, and fixed-line ascent on MuJoCo Playground (MJX/GPU), alongside the
+LiveKit voice interface used in this demo.
+

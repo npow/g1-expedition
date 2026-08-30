@@ -97,3 +97,12 @@ git add slip_recovery_env.py evaluate_slip_recovery.py train_slip_recovery.py \
         assets/unitree_g1/assets/rope_tube.obj \
         SLIP_RECOVERY.md HANDOFF_STAGE2.md
 ```
+
+## Related work
+
+[abhijitbetigeri/HimalayaExpedition](https://github.com/abhijitbetigeri/HimalayaExpedition)
+— Robotic Expedition in Himalayas. Companion project covering the wider
+Himalayan robotics track: ice/snow locomotion under domain randomization, wind
+loading, and fixed-line ascent on MuJoCo Playground (MJX/GPU), alongside the
+LiveKit voice interface used in this demo.
+
