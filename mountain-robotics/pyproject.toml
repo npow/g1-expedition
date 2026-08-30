@@ -1,0 +1,18 @@
+[project]
+name = "alpine-lift"
+version = "0.1.0"
+description = "Two Unitree G1 humanoids coordinating to clear a fallen tree from a mountain trail"
+requires-python = ">=3.11"
+dependencies = [
+    "mujoco==3.12.0",
+    "numpy>=2.0",
+    "imageio>=2.34",
+    "imageio-ffmpeg>=0.5",
+    "pillow>=10.0",
+]
+
+[project.optional-dependencies]
+train = ["torch>=2.4", "huggingface_hub>=0.34"]
+
+[tool.setuptools.packages.find]
+include = ["alpine_lift*"]
