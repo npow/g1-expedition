@@ -41,7 +41,7 @@ ffmpeg -hide_banner -loglevel error -i source_videos/g1_rappel_long.mp4 -i sourc
 ffmpeg -hide_banner -loglevel error -i source_videos/tree.mp4 -i source_videos/lifting_log.mp4 -i source_videos/failure.mp4 \
   -loop 1 -i build/cards/overlay_team.png -loop 1 -i build/cards/overlay_voice_1.png \
   -loop 1 -i build/cards/overlay_voice_2.png -loop 1 -i build/cards/overlay_voice_3.png \
-  -filter_complex "[0:v]trim=start=34:end=42,setpts=PTS-STARTPTS,scale=1920:1080,fps=30[a];[1:v]trim=start=0.25:end=14,setpts=PTS-STARTPTS,scale=1920:1080,fps=30[b];[2:v]trim=start=3.5:end=9.75,setpts=PTS-STARTPTS,scale=1920:1080,fps=30[c];[a][b][c]concat=n=3:v=1:a=0[base];[base][3:v]overlay=0:0[branded];[branded][4:v]overlay=0:0:enable='between(t,11.5,15)'[v1];[v1][5:v]overlay=0:0:enable='between(t,15,19)'[v2];[v2][6:v]overlay=0:0:enable='between(t,19,28)',fade=t=in:st=0:d=0.3,fade=t=out:st=27.65:d=0.35[out]" \
+  -filter_complex "[0:v]trim=start=34:end=40.9,setpts=PTS-STARTPTS,scale=1920:1080,fps=30[a];[1:v]trim=start=0.25:end=14.5,setpts=PTS-STARTPTS,scale=1920:1080,fps=30[b];[2:v]trim=start=2.9:end=9.75,setpts=PTS-STARTPTS,scale=1920:1080,fps=30[c];[a][b][c]concat=n=3:v=1:a=0[base];[base][3:v]overlay=0:0[branded];[branded][4:v]overlay=0:0:enable='between(t,11.5,15)'[v1];[v1][5:v]overlay=0:0:enable='between(t,15,19)'[v2];[v2][6:v]overlay=0:0:enable='between(t,19,28)',fade=t=in:st=0:d=0.3,fade=t=out:st=27.65:d=0.35[out]" \
   -map "[out]" -t 28 "${enc[@]}" build/segments/07_team.mp4 -y
 
 ffmpeg -hide_banner -loglevel error \
