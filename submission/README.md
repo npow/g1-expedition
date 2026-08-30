@@ -24,8 +24,8 @@ deck, and every local source needed to edit or regenerate them.
 | 0:00–0:03.5 | Team/title card |
 | 0:03.5–0:08.5 | Four-skill overview |
 | 0:08.5–0:16.5 | One hard self-arrest plus evaluation results |
-| 0:16.5–0:29.5 | Fixed-line catch, fall recovery on ice, and resumed ascent |
-| 0:29.5–0:40 | Standalone learned whole-body get-up |
+| 0:16.5–0:30 | Fixed-line catch, full-fall recovery, and slip-to-resume on ice |
+| 0:30–0:40 | Standalone learned whole-body get-up |
 | 0:40–0:49 | Controlled rappel: brake control plus one foot-placement sequence |
 | 0:49–0:57 | Overload refusal, beginning directly on the action |
 | 0:57–1:17 | Cooperative lift and LiveKit telemetry/voice control |
@@ -84,7 +84,7 @@ safe margins over the tracked Himalayan background in `cover_assets/`.
 | Skill | Primary source clips |
 |---|---|
 | Self-arrest | `g1_self_arrest_diverse_suite.mp4` |
-| Fixed-line fall recovery/get-up | `g1_fixed_line_fall_recovery.mp4`, `fall_recovery.mp4` |
+| Fixed-line fall recovery/get-up | `g1_fixed_line_fall_recovery.mp4`, `slip_recovery_final.mp4`, `fall_recovery.mp4` |
 | Rappel | `g1_rappel_long.mp4`, `g1_rappel_footplant_full_preview.mp4` |
 | Cooperative lift | `tree.mp4`, `lifting_log.mp4`, `failure.mp4` |
 

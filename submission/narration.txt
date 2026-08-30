@@ -2,7 +2,11 @@ In the Himalayas, walking is not enough. Optimus Prime trained G1 for falls, los
 
 First: self-arrest. G1 plants the axe and stops the slide. One policy passed nine named and sixty randomized falls.
 
-Next: fall recovery on ice. The fixed line catches the slip and the controller regains stance. A learned whole-body get-up also returns G1 to its feet after a full fall.
+Next: fall recovery on ice. The fixed line catches a full fall and the controller regains stance.
+
+In another test, G1 absorbs a slip and immediately resumes uphill.
+
+A learned whole-body get-up also returns G1 to its feet.
 
 For cliffs, the rappel policy coordinates braking with foot placement on a sixty-five-degree face, descending two meters while maintaining brake tension.
 

@@ -29,8 +29,9 @@ ffmpeg -hide_banner -loglevel error -i source_videos/g1_self_arrest_diverse_suit
   -map "[out]" -t 8 "${enc[@]}" build/segments/04_self.mp4 -y
 
 ffmpeg -hide_banner -loglevel error -i source_videos/g1_fixed_line_fall_recovery.mp4 -i source_videos/fall_recovery.mp4 \
+  -i source_videos/slip_recovery_final.mp4 \
   -loop 1 -i build/cards/overlay_fixed.png -loop 1 -i build/cards/overlay_getup.png \
-  -filter_complex "[0:v]trim=start=0.6:end=13.6,setpts=PTS-STARTPTS,scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=30[icebase];[icebase][2:v]overlay=0:0:shortest=1[ice];[1:v]trim=start=0:end=12.02,setpts=(PTS-STARTPTS)/1.145,scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=30[getbase];[getbase][3:v]overlay=0:0:shortest=1[getup];[ice][getup]concat=n=2:v=1:a=0,fade=t=in:st=0:d=0.3,fade=t=out:st=23.15:d=0.35[out]" \
+  -filter_complex "[0:v]trim=start=0.6:end=11.6,setpts=PTS-STARTPTS,scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=30[fall];[2:v]trim=start=0.7:end=4.7,setpts=PTS-STARTPTS,scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=30[slip];[fall][slip]concat=n=2:v=1:a=0[recoverybase];[recoverybase][3:v]overlay=0:0:shortest=1[recovery];[1:v]trim=start=0:end=11.9,setpts=(PTS-STARTPTS)/1.4,scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=30[getbase];[getbase][4:v]overlay=0:0:shortest=1[getup];[recovery][getup]concat=n=2:v=1:a=0,fade=t=in:st=0:d=0.3,fade=t=out:st=23.15:d=0.35[out]" \
   -map "[out]" -t 23.5 "${enc[@]}" build/segments/05_fixed.mp4 -y
 
 ffmpeg -hide_banner -loglevel error -i source_videos/g1_rappel_long.mp4 -i source_videos/g1_rappel_footplant_full_preview.mp4 -loop 1 -i build/cards/overlay_rappel.png \
@@ -63,8 +64,9 @@ ffmpeg -hide_banner -loglevel error \
   -i build/audio/narration_1.mp3 -i build/audio/narration_2.mp3 \
   -i build/audio/narration_3.mp3 -i build/audio/narration_4.mp3 \
   -i build/audio/narration_5.mp3 -i build/audio/narration_6.mp3 \
+  -i build/audio/narration_7.mp3 -i build/audio/narration_8.mp3 \
   -f lavfi -i "aevalsrc=0.025*(sin(2*PI*55*t)+0.55*sin(2*PI*82.41*t)+0.35*sin(2*PI*110*t)):s=48000:d=$final_duration" \
-  -filter_complex "[0:a]adelay=400,volume=1.0[a0];[1:a]adelay=8700,volume=1.0[a1];[2:a]adelay=16700,volume=1.0[a2];[3:a]adelay=40200,volume=1.0[a3];[4:a]adelay=49200,volume=1.0[a4];[5:a]adelay=61500,volume=1.0[a5];[6:a]lowpass=f=420,afade=t=in:st=0:d=3,afade=t=out:st=73:d=4,volume=0.10[bed];[a0][a1][a2][a3][a4][a5][bed]amix=inputs=7:duration=longest:normalize=0,loudnorm=I=-16:LRA=8:TP=-1.5,atrim=duration=${final_duration}[aout]" \
+  -filter_complex "[0:a]adelay=400,volume=1.0[a0];[1:a]adelay=8700,volume=1.0[a1];[2:a]adelay=16700,volume=1.0[a2];[3:a]adelay=27500,volume=1.0[a3];[4:a]adelay=31700,volume=1.0[a4];[5:a]adelay=40200,volume=1.0[a5];[6:a]adelay=49200,volume=1.0[a6];[7:a]adelay=61500,volume=1.0[a7];[8:a]lowpass=f=420,afade=t=in:st=0:d=3,afade=t=out:st=73:d=4,volume=0.10[bed];[a0][a1][a2][a3][a4][a5][a6][a7][bed]amix=inputs=9:duration=longest:normalize=0,loudnorm=I=-16:LRA=8:TP=-1.5,atrim=duration=${final_duration}[aout]" \
   -map "[aout]" -c:a aac -b:a 192k -ar 48000 -ac 2 build/soundtrack.m4a -y
 
 ffmpeg -hide_banner -loglevel error -i build/picture_captioned.mp4 -i build/soundtrack.m4a \
