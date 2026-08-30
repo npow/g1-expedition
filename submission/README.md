@@ -5,28 +5,29 @@ deck, and every local source needed to edit or regenerate them.
 
 ## Final deliverables
 
-- `optimus_prime_g1_expedition_2min.mp4` — exactly 120 seconds, 1080p H.264,
+- `optimus_prime_g1_expedition_2min.mp4` — 88.5 seconds, 1080p H.264,
   AAC voiceover, burned-in captions
 - `optimus_prime_g1_expedition_2min.srt` — separate subtitle track
-- `optimus_prime_pitch_90s.pptx` and `.pdf` — four-slide mountain-themed pitch
+- `optimus_prime_pitch_90s.pptx` and `.pdf` — six-slide mountain-themed pitch
 - `pitch_script_90s.md` — timed speaker script matching the deck notes
+- `optimus_prime_project_cover.png` — 16:9 cover with all four skills and team name
 
 ## Demo structure
 
 | Time | Material |
 |---:|---|
-| 0:00–0:04 | Team/title card |
-| 0:04–0:10 | Four-skill overview |
-| 0:10–0:37.5 | Ice-axe self-arrest |
-| 0:37.5–1:01.5 | Fixed-line fall recovery and autonomous get-up |
-| 1:01.5–1:23.5 | Controlled rappel |
-| 1:23.5–1:39.5 | Cooperative lift: overload first, then safe lift |
-| 1:39.5–1:55.5 | LiveKit Agents voice commander: telemetry query, grounded response, then “move the log” → confirmed START intent |
-| 1:55.5–2:00 | Closing card |
+| 0:00–0:03.5 | Team/title card |
+| 0:03.5–0:08.5 | Four-skill overview |
+| 0:08.5–0:16.5 | One hard self-arrest plus evaluation results |
+| 0:16.5–0:40 | Fixed-line fall recovery and autonomous get-up |
+| 0:40–0:56 | Controlled rappel |
+| 0:56–1:04 | Overload refusal, beginning directly on the action |
+| 1:04–1:24 | Cooperative lift and LiveKit telemetry/voice control |
+| 1:24–1:28.5 | Closing card |
 
 The pitch carries the problem, extreme-condition motivation, technical
-architecture, and quantified evidence. The demo spends its full two minutes on
-observable behavior and short on-screen explanations.
+architecture, and quantified evidence. The demo stays below the two-minute
+limit and uses only the footage needed to show each behavior clearly.
 
 ## Rebuild the video
 
@@ -63,6 +64,10 @@ cp build/pitch_render/optimus_prime_pitch_90s.pdf .
 
 Edit `build_assets.py` for visual content, `build_pitch_deck.js` for slide
 assembly and speaker notes, and `pitch_script_90s.md` for the readable script.
+
+Regenerate the project cover with `python3 build_cover.py`. It uses the four
+idealized robot illustrations from the evidence slide, placed uncropped with
+safe margins over the tracked Himalayan background in `cover_assets/`.
 
 ## Source mapping
 

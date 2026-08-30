@@ -24,7 +24,8 @@ if not API_KEY:
 # George is the official public voice used by ElevenLabs in its API example.
 VOICE_ID = "JBFqnCBsd6RMkjVDRZzb"
 MODEL_ID = "eleven_multilingual_v2"
-STARTS = [0.4, 10.2, 37.7, 61.7, 83.7, 98.2, 113.3]
+VIDEO_DURATION = float(os.environ.get("VIDEO_DURATION", "88.5"))
+STARTS = [0.4, 8.7, 19.0, 40.2, 56.2, 68.5, 84.2]
 PARAGRAPHS = [p.strip() for p in (ROOT / "narration.txt").read_text().split("\n\n") if p.strip()]
 if len(PARAGRAPHS) != len(STARTS):
     raise SystemExit(f"Expected {len(STARTS)} narration paragraphs, found {len(PARAGRAPHS)}")
@@ -115,7 +116,7 @@ for segment_start, alignment in zip(STARTS, alignments):
 
 for i in range(len(cues)-1):
     cues[i][1] = min(cues[i][1], cues[i+1][0] - 0.035)
-cues[-1][1] = min(cues[-1][1], 119.8)
+cues[-1][1] = min(cues[-1][1], VIDEO_DURATION - 0.2)
 
 for old in CAPTIONS.glob("caption_*.png"):
     old.unlink()
@@ -157,8 +158,8 @@ for i, (start, end, value) in enumerate(cues):
     render_caption(target, value)
     entries.append((target, max(0.05, end-start)))
     cursor = end
-if cursor < 120:
-    entries.append((blank, 120-cursor))
+if cursor < VIDEO_DURATION:
+    entries.append((blank, VIDEO_DURATION-cursor))
 
 concat = CAPTIONS / "concat.txt"
 with concat.open("w") as f:
