@@ -25,6 +25,9 @@ TEAMMATE_TOKEN_DIM = 7
 TRACK_NAME = "g1-coordination-state-v1"
 SUPERVISORY_RPC_METHOD = "g1.supervisory-command.v1"
 SUPERVISORY_COMMANDS = frozenset({"start", "hold", "resume", "abort"})
+SUPERVISORY_QUEUE_LIMIT = 32
+SUPERVISORY_COMMAND_MAX_AGE_NS = 10_000_000_000
+SUPERVISORY_COMMAND_MAX_FUTURE_SKEW_NS = 5_000_000_000
 
 _MAGIC = b"G1ST"
 _VERSION = 1
@@ -58,6 +61,8 @@ class RobotCoordinationState:
         values = (*self.position_w, *self.linear_velocity_w, *self.orientation_wxyz, self.load_ratio)
         if not all(math.isfinite(value) for value in values):
             raise ValueError("Coordination state contains a non-finite value")
+        if not 0.0 <= self.load_ratio <= 1.0:
+            raise ValueError("Coordination load ratio must be between zero and one")
         quaternion_norm = math.sqrt(sum(value * value for value in self.orientation_wxyz))
         if quaternion_norm < 1.0e-6:
             raise ValueError("Coordination orientation has zero norm")
@@ -79,6 +84,12 @@ class RobotCoordinationState:
             raise ValueError("Coordination packet has the wrong magic")
         if version != _VERSION:
             raise ValueError(f"Unsupported coordination packet version: {version}")
+        if not all(math.isfinite(value) for value in values):
+            raise ValueError("Coordination packet contains a non-finite value")
+        if not 0.0 <= values[10] <= 1.0:
+            raise ValueError("Coordination load ratio must be between zero and one")
+        if math.sqrt(sum(value * value for value in values[6:10])) < 1.0e-6:
+            raise ValueError("Coordination orientation has zero norm")
         return cls(
             robot_id=f"g1_{index}",
             sequence=sequence,
@@ -187,9 +198,7 @@ def assemble_policy_observation(
 ) -> tuple[list[float], list[bool]]:
     """Append LiveKit-delivered teammate tokens to the 98-value local state."""
     if len(local_observation) != LOCAL_OBSERVATION_DIM:
-        raise ValueError(
-            f"Expected {LOCAL_OBSERVATION_DIM} local observation values, got {len(local_observation)}"
-        )
+        raise ValueError(f"Expected {LOCAL_OBSERVATION_DIM} local observation values, got {len(local_observation)}")
     kinematics, loads, freshness = teammate_observation_parts(
         recipient,
         teammate_ids,
@@ -222,7 +231,7 @@ class LiveKitRobotStateClient:
         self._track = None
         self._subscriber_tasks: set[asyncio.Task] = set()
         self._command_lock = threading.Lock()
-        self._commands: deque[dict[str, object]] = deque(maxlen=32)
+        self._commands: deque[dict[str, object]] = deque()
         self._command_ids: deque[str] = deque(maxlen=128)
 
     async def connect(self) -> None:
@@ -256,13 +265,38 @@ class LiveKitRobotStateClient:
             return json.dumps({"accepted": False, "reason": "payload is not valid JSON"})
         if not isinstance(command, dict):
             return json.dumps({"accepted": False, "reason": "payload must be an object"})
+        version = command.get("version")
         command_id = command.get("command_id")
         intent = command.get("intent")
-        if not isinstance(command_id, str) or not command_id or intent not in SUPERVISORY_COMMANDS:
-            return json.dumps({"accepted": False, "reason": "invalid command id or intent"})
+        issued_at_ns = command.get("issued_at_ns")
+        source = command.get("source")
+        if version != 1:
+            return json.dumps({"accepted": False, "reason": "unsupported command version"})
+        if (
+            not isinstance(command_id, str)
+            or not command_id
+            or intent not in SUPERVISORY_COMMANDS
+            or not isinstance(issued_at_ns, int)
+            or isinstance(issued_at_ns, bool)
+            or issued_at_ns <= 0
+            or not isinstance(source, str)
+            or not source
+        ):
+            return json.dumps({"accepted": False, "reason": "invalid command envelope"})
+        if source != invocation.caller_identity:
+            return json.dumps({"accepted": False, "reason": "source does not match authenticated caller"})
+        now_ns = time.time_ns()
+        if issued_at_ns < now_ns - SUPERVISORY_COMMAND_MAX_AGE_NS:
+            return json.dumps({"accepted": False, "reason": "command has expired"})
+        if issued_at_ns > now_ns + SUPERVISORY_COMMAND_MAX_FUTURE_SKEW_NS:
+            return json.dumps({"accepted": False, "reason": "command timestamp is too far in the future"})
         with self._command_lock:
             if command_id in self._command_ids:
                 return json.dumps({"accepted": True, "duplicate": True, "robot_id": self.robot_id})
+            if intent == "abort":
+                self._commands.clear()
+            elif len(self._commands) >= SUPERVISORY_QUEUE_LIMIT:
+                return json.dumps({"accepted": False, "reason": "supervisory command queue is full"})
             self._command_ids.append(command_id)
             self._commands.append(command)
         return json.dumps({"accepted": True, "queued": True, "robot_id": self.robot_id})

@@ -10,7 +10,8 @@ requires-python = ">=3.12"
 dependencies = []
 
 [project.optional-dependencies]
-livekit = ["livekit>=1.1.16,<2"]
+livekit = ["livekit==1.1.15"]
+voice = ["gymnasium>=1,<2", "livekit-agents[elevenlabs]==1.7.1"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

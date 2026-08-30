@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import json
 import math
+import time
 from types import SimpleNamespace
 
 import pytest
 
 from cooperative_beam_isaaclab.tasks.livekit_state_bus import (
     LOCAL_OBSERVATION_DIM,
+    SUPERVISORY_QUEUE_LIMIT,
     LatestStateTable,
     LiveKitRobotStateClient,
     RobotCoordinationState,
@@ -36,6 +38,13 @@ def test_binary_packet_round_trip() -> None:
     assert decoded.linear_velocity_w == pytest.approx(original.linear_velocity_w)
     assert decoded.orientation_wxyz == pytest.approx(original.orientation_wxyz)
     assert decoded.load_ratio == pytest.approx(original.load_ratio)
+
+
+def test_binary_packet_rejects_invalid_state_values() -> None:
+    with pytest.raises(ValueError, match="load ratio"):
+        state("g1_0", 1, (0.0, 0.0, 0.0), load=1.1).encode()
+    with pytest.raises(ValueError, match="non-finite"):
+        state("g1_0", 1, (math.nan, 0.0, 0.0)).encode()
 
 
 def test_older_packets_do_not_replace_latest_state() -> None:
@@ -81,13 +90,17 @@ def test_stale_state_is_zero_filled_without_changing_checkpoint_width() -> None:
 
 
 def test_supervisory_rpc_requires_authorized_caller_and_deduplicates() -> None:
-    client = LiveKitRobotStateClient(
-        "g1_0", "wss://example.invalid", "token", command_callers=("incident-commander",)
+    client = LiveKitRobotStateClient("g1_0", "wss://example.invalid", "token", command_callers=("incident-commander",))
+    payload = json.dumps(
+        {
+            "version": 1,
+            "command_id": "command-1",
+            "intent": "hold",
+            "issued_at_ns": time.time_ns(),
+            "source": "incident-commander",
+        }
     )
-    payload = json.dumps({"command_id": "command-1", "intent": "hold", "issued_at_ns": 123})
-    unauthorized = json.loads(
-        client._receive_command(SimpleNamespace(caller_identity="stranger", payload=payload))
-    )
+    unauthorized = json.loads(client._receive_command(SimpleNamespace(caller_identity="stranger", payload=payload)))
     assert not unauthorized["accepted"]
     assert client.drain_commands() == []
 
@@ -98,3 +111,55 @@ def test_supervisory_rpc_requires_authorized_caller_and_deduplicates() -> None:
     assert duplicate == {"accepted": True, "duplicate": True, "robot_id": "g1_0"}
     assert client.drain_commands() == [json.loads(payload)]
     assert client.drain_commands() == []
+
+
+def test_supervisory_rpc_rejects_spoofed_expired_and_future_envelopes() -> None:
+    client = LiveKitRobotStateClient("g1_0", "wss://example.invalid", "token", command_callers=("incident-commander",))
+    invocation = SimpleNamespace(caller_identity="incident-commander")
+
+    def receive(**overrides) -> dict[str, object]:
+        command = {
+            "version": 1,
+            "command_id": "command",
+            "intent": "hold",
+            "issued_at_ns": time.time_ns(),
+            "source": "incident-commander",
+        }
+        command.update(overrides)
+        invocation.payload = json.dumps(command)
+        return json.loads(client._receive_command(invocation))
+
+    assert receive(source="someone-else")["reason"] == "source does not match authenticated caller"
+    assert receive(issued_at_ns=time.time_ns() - 11_000_000_000)["reason"] == "command has expired"
+    assert receive(issued_at_ns=time.time_ns() + 6_000_000_000)["reason"] == (
+        "command timestamp is too far in the future"
+    )
+    assert receive(version=2)["reason"] == "unsupported command version"
+    assert client.drain_commands() == []
+
+
+def test_supervisory_queue_rejects_overflow_and_abort_supersedes_pending_commands() -> None:
+    client = LiveKitRobotStateClient("g1_0", "wss://example.invalid", "token", command_callers=("incident-commander",))
+    invocation = SimpleNamespace(caller_identity="incident-commander")
+
+    def send(command_id: str, intent: str) -> dict[str, object]:
+        invocation.payload = json.dumps(
+            {
+                "version": 1,
+                "command_id": command_id,
+                "intent": intent,
+                "issued_at_ns": time.time_ns(),
+                "source": "incident-commander",
+            }
+        )
+        return json.loads(client._receive_command(invocation))
+
+    for index in range(SUPERVISORY_QUEUE_LIMIT):
+        assert send(f"hold-{index}", "hold")["accepted"]
+    overflow = send("one-too-many", "hold")
+    assert not overflow["accepted"]
+    assert overflow["reason"] == "supervisory command queue is full"
+
+    assert send("safety-abort", "abort")["accepted"]
+    queued = client.drain_commands()
+    assert [command["command_id"] for command in queued] == ["safety-abort"]

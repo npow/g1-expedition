@@ -93,6 +93,26 @@ The bridge accepts JSON Lines from the local estimator and returns the complete
 checkpoint-compatible actor observation. Credentials remain environment-only
 and are never stored in the repository.
 
+## Voice incident commander
+
+The optional voice layer turns the LiveKit room into a hands-free incident
+command channel. ElevenLabs provides realtime transcription and speech; every
+robot-state answer comes from the existing coordination DataTracks. The LLM
+cannot emit joint targets. It can request only `start`, `hold`, `resume`, or
+`abort` through a deterministic state machine with telemetry, load, phase, and
+confirmation gates. A continuous watchdog broadcasts abort if active telemetry
+expires, and incomplete command acknowledgement also fails closed.
+
+Run the credential-free, explicitly labelled telemetry fixture with:
+
+```bash
+cd cooperative_beam_isaaclab
+uv run --extra voice python scripts/incident_commander_console.py
+```
+
+See [VOICE_INCIDENT_COMMANDER.md](VOICE_INCIDENT_COMMANDER.md) for the
+ElevenLabs setup, live-room topology, security boundary, and judge demo.
+
 ## Repository map
 
 ```text
@@ -112,6 +132,9 @@ models/ppo_fixed_line_slope/       canonical ascender PPO run/checkpoints
 models/ppo_mountain_recovery/      selected integrated recovery PPO + report
 cooperative_beam_isaaclab/         isolated Isaac Lab cooperative MAPPO project
   scripts/livekit_state_bridge.py  deployed LiveKit state transport process
+  scripts/voice_incident_commander.py  ElevenLabs/LiveKit voice agent
+  scripts/incident_commander_console.py credential-free safety-core demo
+  .../tasks/incident_commander.py  deterministic command and telemetry gates
   .../tasks/livekit_state_bus.py   binary codec, freshness gate, actor adapter
 videos/                            final policy evidence and telemetry
 submission/                        final demo, pitch deck, source clips, rebuild pipeline
