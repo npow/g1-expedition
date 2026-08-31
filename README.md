@@ -1,5 +1,7 @@
 # G1 Expedition
 
+[![3rd Place - Himalaya Robotics Hackathon](https://img.shields.io/badge/🥉_3RD_PLACE-HIMALAYA_ROBOTICS_HACKATHON-cd7f32?style=for-the-badge)](https://iterate.inc/robot-himalaya-hack)
+
 **Optimus Prime's Unitree G1 stack for alpine failure recovery:** ice-axe
 self-arrest, fixed-line ascent and fall recovery, controlled rappel evidence,
 and cooperative rescue-load transport. Single-robot skills use MuJoCo; learned

@@ -84,14 +84,7 @@ draw.text(
     anchor="mm",
 )
 draw.text((110, 127), "OPTIMUS PRIME", font=font(FONT_BOLD, 79), fill=(252, 250, 241, 255))
-draw.text((113, 221), "G1 EXPEDITION", font=font(FONT_BOLD, 30), fill=(154, 218, 236, 255))
-draw.text(
-    (1805, 224),
-    "FOUR LEARNED SKILLS FOR EXTREME TERRAIN",
-    font=font(FONT_BOLD, 20),
-    fill=(222, 232, 231, 255),
-    anchor="ra",
-)
+draw.text((113, 221), "EXPEDITION SKILLS FOR HUMANOID MOUNTAINEERING", font=font(FONT_BOLD, 26), fill=(154, 218, 236, 255))
 
 skills = [
     ("ICE-AXE SELF-ARREST", "MOVEMENT", Image.open(ROOT / "assets/theme/action_self.png").convert("RGB")),

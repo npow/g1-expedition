@@ -88,13 +88,13 @@ def technical_marks(d):
 def save_title():
     im = theme_bg(); d = ImageDraw.Draw(im, "RGBA"); technical_marks(d)
     tx(d, (92, 124), "AUGUST 29–30  /  HIMALAYA ROBOTICS HACKATHON 2026", 25, fill=ORANGE, bold=True)
-    tx(d, (90, 210), "OPTIMUS\nPRIME", 102, fill=INK, bold=True, narrow=True, spacing=-8)
-    d.rectangle((86, 455, 760, 680), fill=ORANGE + (245,))
-    tx(d, (120, 485), "G1\nEXPEDITION", 76, fill=INK, bold=True, narrow=True, spacing=-4)
-    tx(d, (92, 725), "EXTREME-CONDITION ROBOTICS", 28, fill=INK, bold=True)
-    tx(d, (92, 780), "Movement  /  Action  /  Thinking", 27, fill=MUTED)
-    d.rectangle((90, 875, 700, 920), fill=INK + (245,))
-    tx(d, (112, 884), "FOUR SKILLS  ·  LIVEKIT STATE + VOICE", 21, fill=WHITE, bold=True)
+    tx(d, (90, 205), "OPTIMUS PRIME", 88, fill=INK, bold=True, narrow=True)
+    d.rectangle((86, 325, 1180, 620), fill=ORANGE + (245,))
+    tx(d, (120, 365), "EXPEDITION SKILLS FOR\nHUMANOID MOUNTAINEERING", 58, fill=INK, bold=True, narrow=True, spacing=6)
+    tx(d, (92, 690), "EXTREME-CONDITION ROBOTICS", 28, fill=INK, bold=True)
+    tx(d, (92, 745), "Movement  /  Action  /  Thinking", 27, fill=MUTED)
+    d.rectangle((90, 840, 700, 885), fill=INK + (245,))
+    tx(d, (112, 849), "FOUR SKILLS  ·  LIVEKIT STATE + VOICE", 21, fill=WHITE, bold=True)
     im.save(OUT / "title.png")
 
 
@@ -201,7 +201,7 @@ def save_ppo_training():
 def save_mappo_training():
     im = paper_bg(); d = ImageDraw.Draw(im, "RGBA"); technical_marks(d)
     tx(d, (90, 112), "HOW THE TEAM POLICY LEARNS", 63, fill=INK, bold=True, narrow=True)
-    tx(d, (94, 188), "ISAAC LAB  /  SHARED MAPPO  /  CENTRALIZED TRAINING", 25, fill=ORANGE, bold=True)
+    tx(d, (94, 188), "ISAAC SIM  /  ISAAC LAB  /  SHARED MAPPO  /  CURRICULUM", 25, fill=ORANGE, bold=True)
 
     # Actor path at deployment.
     d.rectangle((82, 255, 1838, 520), fill=WHITE + (246,), outline=INK + (255,), width=3)
@@ -230,7 +230,7 @@ def save_mappo_training():
     tx(d, (1450, 578), "ACTOR: LOCAL + TOKENS ONLY\nAT INFERENCE", 16, fill=ORANGE, bold=True, spacing=3)
     tx(d, (112, 640), "MAPPO: 24-step rollouts  ·  5 epochs  ·  γ .99  ·  GAE .95  ·  clip .2  ·  lr 3e−4", 18, fill=WHITE, bold=True)
 
-    tx(d, (84, 720), "SHARED TEAM REWARD", 23, fill=ORANGE, bold=True)
+    tx(d, (84, 720), "REWARD SHAPING  /  SHARED TEAM OBJECTIVE", 23, fill=ORANGE, bold=True)
     reward_boxes = [
         (82, 277, "+  TRACK"),
         (292, 487, "+  LEVEL"),
@@ -382,11 +382,11 @@ def voice_demo_overlays():
 
 def save_outro():
     im = theme_bg(); d = ImageDraw.Draw(im, "RGBA"); technical_marks(d)
-    d.rectangle((75, 185, 820, 780), fill=ORANGE + (245,))
-    tx(d,(112,230),"OPTIMUS\nPRIME",88,fill=INK,bold=True,narrow=True,spacing=-8)
-    d.line((112,475,755,475),fill=INK+(255,),width=5)
-    tx(d,(112,515),"G1 EXPEDITION",44,fill=INK,bold=True,narrow=True)
-    tx(d,(112,600),"Training robots for the parts\nof the mountain humans\nshould not have to face.",31,fill=INK,bold=True,spacing=10)
+    d.rectangle((75, 175, 960, 800), fill=ORANGE + (245,))
+    tx(d,(112,215),"OPTIMUS PRIME",80,fill=INK,bold=True,narrow=True)
+    d.line((112,315,900,315),fill=INK+(255,),width=5)
+    tx(d,(112,350),"EXPEDITION SKILLS FOR\nHUMANOID MOUNTAINEERING",42,fill=INK,bold=True,narrow=True,spacing=4)
+    tx(d,(112,490),"Training robots for the parts\nof the mountain humans\nshould not have to face.",30,fill=INK,bold=True,spacing=10)
     tx(d,(90,875),"HIMALAYA ROBOTICS HACKATHON 2026",25,fill=INK,bold=True)
     d.rectangle((90, 930, 770, 980), fill=INK + (245,))
     tx(d,(118,942),"LIVEKIT AGENTS + INFERENCE  ·  STATE + VOICE",21,fill=ORANGE,bold=True)
@@ -396,7 +396,7 @@ def save_outro():
 def save_pitch_problem():
     im = theme_bg(); d = ImageDraw.Draw(im, "RGBA"); technical_marks(d)
     d.rectangle((74, 130, 940, 910), fill=ORANGE + (246,), outline=INK + (255,), width=3)
-    tx(d, (112, 170), "OPTIMUS PRIME  /  G1 EXPEDITION", 25, fill=INK, bold=True)
+    tx(d, (112, 170), "OPTIMUS PRIME  /  EXPEDITION SKILLS FOR HUMANOID MOUNTAINEERING", 21, fill=INK, bold=True)
     tx(d, (108, 260), "THE MOUNTAIN\nAMPLIFIES\nFAILURE", 86, fill=INK, bold=True, narrow=True, spacing=-7)
     d.rectangle((110, 590, 850, 657), fill=INK + (248,))
     tx(d, (138, 606), "A SLIP BECOMES A FALL.", 30, fill=WHITE, bold=True)
@@ -409,7 +409,7 @@ def save_pitch_problem():
 def save_pitch_skills():
     im = paper_bg(); d = ImageDraw.Draw(im, "RGBA"); technical_marks(d)
     tx(d, (90, 112), "FOUR SKILLS FOR EXTREME TERRAIN.", 62, fill=INK, bold=True, narrow=True)
-    tx(d, (94, 185), "ONE EXPEDITION SYSTEM", 25, fill=ORANGE, bold=True)
+    tx(d, (94, 185), "ONE EXPEDITION SYSTEM  /  CURRICULUM-TRAINED POLICIES", 25, fill=ORANGE, bold=True)
     items = [
         ("self", 82, 275, "01  SELF-ARREST", "STOP THE\nSLIDE", BLUE),
         ("recovery", 974, 275, "02  FALL RECOVERY", "GET BACK\nUP", ORANGE),
@@ -431,7 +431,7 @@ def save_pitch_skills():
 def save_simple_problem():
     im = theme_bg(); d = ImageDraw.Draw(im, "RGBA"); technical_marks(d)
     d.rectangle((82, 145, 1070, 925), fill=ORANGE + (246,), outline=INK + (255,), width=3)
-    tx(d, (125, 195), "OPTIMUS PRIME  /  G1 EXPEDITION", 25, fill=INK, bold=True)
+    tx(d, (125, 195), "OPTIMUS PRIME  /  EXPEDITION SKILLS FOR HUMANOID MOUNTAINEERING", 21, fill=INK, bold=True)
     tx(d, (120, 310), "A SLIP\nBECOMES\nA RESCUE.", 96, fill=INK, bold=True, narrow=True, spacing=-8)
     d.rectangle((122, 700, 995, 800), fill=INK + (248,))
     tx(d, (558, 750), "G1 MUST RECOVER BEFORE A HUMAN MUST INTERVENE.", 25, fill=WHITE, bold=True, anchor="mm")
@@ -442,47 +442,61 @@ def save_simple_problem():
 def save_simple_ppo():
     im = paper_bg(); d = ImageDraw.Draw(im, "RGBA"); technical_marks(d)
     tx(d, (90, 112), "ONE POLICY. MANY FALLS.", 66, fill=INK, bold=True, narrow=True)
-    tx(d, (94, 188), "SINGLE-ROBOT PPO", 25, fill=ORANGE, bold=True)
+    tx(d, (94, 188), "MUJOCO SIMULATION  /  PPO  /  REWARD SHAPING", 25, fill=ORANGE, bold=True)
 
     boxes = [
-        (110, 335, 525, "125 OBSERVATIONS", "pose · speed · tool load"),
-        (755, 335, 1165, "PPO  2 × 256", "compact learned policy"),
-        (1395, 335, 1810, "14 ARM COMMANDS", "plant and load the axe"),
+        (110, 310, 525, "125 OBSERVATIONS", "pose · speed · tool load"),
+        (755, 310, 1165, "MUJOCO + PPO", "100 Hz compact policy"),
+        (1395, 310, 1810, "14 ARM COMMANDS", "plant and load the axe"),
     ]
     for i, (x1, y1, x2, head, detail) in enumerate(boxes):
         color = ORANGE if i == 1 else INK
-        d.rounded_rectangle((x1, y1, x2, 555), radius=20, fill=color + (248,), outline=INK + (255,), width=3)
+        d.rounded_rectangle((x1, y1, x2, 530), radius=20, fill=color + (248,), outline=INK + (255,), width=3)
         tx(d, ((x1+x2)//2, y1+65), head, 32, fill=(INK if i == 1 else WHITE), bold=True, narrow=True, anchor="ma")
         tx(d, ((x1+x2)//2, y1+132), detail, 20, fill=(INK if i == 1 else ORANGE), bold=True, anchor="ma")
-    arrow(d, 555, 445, 725, 445)
-    arrow(d, 1195, 445, 1365, 445)
+    arrow(d, 555, 420, 725, 420)
+    arrow(d, 1195, 420, 1365, 420)
 
-    d.rectangle((110, 655, 1810, 785), fill=BLUE + (248,))
-    tx(d, (960, 700), "EASY SLIDES   →   5 m/s + CROSS-SLOPE FALLS", 38, fill=WHITE, bold=True, narrow=True, anchor="ma")
-    d.rectangle((250, 855, 1670, 955), fill=INK + (248,))
-    tx(d, (960, 905), "SUCCESS COUNTS ONLY WHEN THE AXE PHYSICALLY BITES.", 29, fill=ORANGE, bold=True, anchor="mm")
+    # Reward shaping bar.
+    d.rectangle((110, 565, 1810, 675), fill=INK + (248,), outline=ORANGE + (255,), width=2)
+    tx(d, (960, 582), "PHYSICAL REWARD SHAPING IN MUJOCO", 20, fill=ORANGE, bold=True, narrow=True, anchor="ma")
+    tx(d, (960, 622), "REWARDS REQUIRE RIGID PICK CONTACT, 22–42° BLADE ANGLE, AND REAL SNOW LOAD", 23, fill=WHITE, bold=True, narrow=True, anchor="ma")
+
+    # Curriculum progression bar.
+    d.rectangle((110, 705, 1810, 835), fill=BLUE + (248,))
+    tx(d, (960, 725), "CURRICULUM LEARNING PROGRESSION", 20, fill=ORANGE, bold=True, narrow=True, anchor="ma")
+    tx(d, (960, 765), "EASY SLIDES   →   5 m/s + CROSS-SLOPE + ADVERSARIAL FALLS", 33, fill=WHITE, bold=True, narrow=True, anchor="ma")
+
+    d.rectangle((250, 880, 1670, 970), fill=INK + (248,))
+    tx(d, (960, 925), "SUCCESS COUNTS ONLY WHEN THE AXE PHYSICALLY BITES.", 28, fill=ORANGE, bold=True, anchor="mm")
     im.save(OUT / "simple_ppo.png")
 
 
 def save_simple_mappo():
     im = paper_bg(); d = ImageDraw.Draw(im, "RGBA"); technical_marks(d)
     tx(d, (90, 112), "ONE SHARED POLICY. EVERY ROBOT.", 63, fill=INK, bold=True, narrow=True)
-    tx(d, (94, 188), "COOPERATIVE MAPPO", 25, fill=ORANGE, bold=True)
+    tx(d, (94, 188), "ISAAC SIM & ISAAC LAB  /  COOPERATIVE MAPPO", 25, fill=ORANGE, bold=True)
 
     art = contain_to(Image.open(ACTION_ART["team"]).convert("RGBA"), 770, 433)
-    d.rectangle((82, 280, 858, 719), fill=WHITE + (248,), outline=INK + (255,), width=3)
-    im.alpha_composite(art, (85, 283))
+    d.rectangle((82, 270, 858, 709), fill=WHITE + (248,), outline=INK + (255,), width=3)
+    im.alpha_composite(art, (85, 273))
 
-    d.rounded_rectangle((980, 280, 1838, 719), radius=20, fill=INK + (248,), outline=ORANGE + (255,), width=3)
-    tx(d, (1025, 325), "LOCAL STATE", 28, fill=WHITE, bold=True, narrow=True)
-    tx(d, (1025, 374), "+ TEAMMATE TOKENS", 28, fill=ORANGE, bold=True, narrow=True)
-    arrow(d, 1390, 395, 1390, 475)
-    tx(d, (1025, 505), "SHARED MAPPO", 37, fill=WHITE, bold=True, narrow=True)
-    tx(d, (1025, 565), "10 COMMANDS / G1", 25, fill=ORANGE, bold=True)
-    tx(d, (1025, 635), "Same actor weights on every robot.", 22, fill=WHITE, bold=True)
+    d.rounded_rectangle((980, 270, 1838, 709), radius=20, fill=INK + (248,), outline=ORANGE + (255,), width=3)
+    tx(d, (1025, 305), "LOCAL STATE + TEAM TOKENS", 26, fill=WHITE, bold=True, narrow=True)
+    tx(d, (1025, 345), "98 local features + 7-D token / teammate", 18, fill=ORANGE, bold=True)
+    arrow(d, 1390, 375, 1390, 425)
+    tx(d, (1025, 445), "ISAAC SIM GPU ACTOR (MAPPO)", 33, fill=WHITE, bold=True, narrow=True)
+    tx(d, (1025, 498), "10 COMMANDS / G1  ·  FROZEN AGILE LEGS", 22, fill=ORANGE, bold=True)
+    tx(d, (1025, 555), "TEAM REWARD SHAPING:", 22, fill=WHITE, bold=True, narrow=True)
+    tx(d, (1025, 595), "+ TRACK  + LEVEL  + LOAD BALANCE  − RATE / FALLS", 19, fill=ORANGE, bold=True)
+    tx(d, (1025, 650), "Same actor weights on every robot.", 20, fill=WHITE, bold=True)
 
-    d.rectangle((145, 820, 1775, 950), fill=BLUE + (248,))
-    tx(d, (960, 865), "LIFT FIRST   →   CARRY + TURN   →   HEAVIER LOADS", 36, fill=WHITE, bold=True, narrow=True, anchor="ma")
+    d.rectangle((145, 745, 1775, 875), fill=BLUE + (248,))
+    tx(d, (960, 768), "MULTI-AGENT CURRICULUM IN ISAAC SIM", 21, fill=ORANGE, bold=True, narrow=True, anchor="ma")
+    tx(d, (960, 810), "LIFT FIRST   →   CARRY + TURN   →   HEAVIER LOADS (8→18 kg)", 33, fill=WHITE, bold=True, narrow=True, anchor="ma")
+
+    d.rectangle((280, 905, 1640, 985), fill=INK + (248,))
+    tx(d, (960, 945), "GPU-VECTORIZED SIMULATION TRAINS DECENTRALIZED COORDINATION", 24, fill=WHITE, bold=True, anchor="mm")
     im.save(OUT / "simple_mappo.png")
 
 
@@ -531,6 +545,100 @@ def save_simple_evidence():
     im.save(OUT / "simple_evidence.png")
 
 
+def save_open_challenges():
+    im = paper_bg(); d = ImageDraw.Draw(im, "RGBA"); technical_marks(d)
+    tx(d, (90, 112), "SIM-TO-REAL: OPEN CHALLENGES", 62, fill=INK, bold=True, narrow=True)
+    tx(d, (94, 188), "SCALING TO THE HIMALAYAS  /  THE C.L.I.M.B. FRONTIER", 25, fill=ORANGE, bold=True)
+
+    cards = [
+        ("C", "CONTACT", "Snow & Ice Dynamics", [
+            "Deformable snow crust",
+            "Non-linear friction drops",
+            "Slush & sliding scree",
+            "Dynamic soft terrain"
+        ]),
+        ("L", "LIGHTING", "Optics & Sensors", [
+            "Flat-light whiteout",
+            "Extreme snow glare",
+            "Harsh cliff shadows",
+            "Precipitation LiDAR clutter"
+        ]),
+        ("I", "INTER-COMMS", "Field Mesh Network", [
+            "No cloud LiveKit at altitude",
+            "Ad-hoc local wireless mesh",
+            "Packet drops >150 ms deadline",
+            "Relative UWB sensing"
+        ]),
+        ("M", "MECHANICAL", "Ropes & Tethers", [
+            "Dynamic rope elasticity",
+            "Variable carabiner friction",
+            "Dynamic line bounce & sag",
+            "Line snag & twist hazards"
+        ]),
+        ("B", "BALANCE", "Unassisted Authority", [
+            "Withdraw sim balance assists",
+            "Whole-body 43-DoF torque",
+            "Sub-zero battery drop",
+            "Thermal actuator limits"
+        ]),
+    ]
+    x0, gap, bw = 82, 20, 335
+    for i, (letter, title, sub, bullets) in enumerate(cards):
+        x = x0 + i * (bw + gap)
+        color = BLUE if i % 2 == 0 else ORANGE
+        d.rounded_rectangle((x, 275, x + bw, 880), radius=18, fill=WHITE + (246,), outline=INK + (255,), width=3)
+        d.rectangle((x, 275, x + bw, 395), fill=color + (248,))
+        tx(d, (x + bw//2, 310), letter, 44, fill=(INK if color == ORANGE else WHITE), bold=True, narrow=True, anchor="mm")
+        tx(d, (x + bw//2, 362), title, 21, fill=(INK if color == ORANGE else WHITE), bold=True, narrow=True, anchor="mm")
+        
+        tx(d, (x + bw//2, 430), sub, 18, fill=(BLUE if color == ORANGE else ORANGE), bold=True, anchor="mm")
+        d.line((x + 30, 458, x + bw - 30, 458), fill=INK + (70,), width=2)
+        
+        y_text = 490
+        for b in bullets:
+            d.ellipse((x + 24, y_text + 6, x + 32, y_text + 14), fill=color + (255,))
+            tx(d, (x + 42, y_text), b, 17, fill=INK, bold=True)
+            y_text += 70
+
+    d.rectangle((240, 915, 1680, 1005), fill=INK + (248,))
+    tx(d, (960, 960), "BRIDGING THE GAP FROM SIMULATION TO HARSH ALPINE DEPLOYMENT", 26, fill=ORANGE, bold=True, anchor="mm")
+    im.save(OUT / "open_challenges.png")
+
+
+def save_simple_open_challenges():
+    im = paper_bg(); d = ImageDraw.Draw(im, "RGBA"); technical_marks(d)
+    tx(d, (90, 112), "SIM-TO-REAL: OPEN CHALLENGES", 62, fill=INK, bold=True, narrow=True)
+    tx(d, (94, 188), "THE C.L.I.M.B. ROADMAP FOR ALPINE ROBOTICS", 25, fill=ORANGE, bold=True)
+
+    cards = [
+        ("C", "CONTACT", "SNOW & ICE", "Slush, crust fracture, and non-linear friction drops on steep slopes"),
+        ("L", "LIGHTING", "OPTICS & SENSORS", "Flat-light whiteout blindness, intense snow glare, and LiDAR backscatter"),
+        ("I", "INTER-COMMS", "OFFLINE MESH", "Ad-hoc peer-to-peer radio mesh when cloud connectivity is unavailable"),
+        ("M", "MECHANICAL", "ROPES & TETHERS", "Rope elasticity, carabiner friction variation, and dynamic line bounce"),
+        ("B", "BALANCE", "UNASSISTED TORQUE", "Replacing sim-only stabilizer crutches with true whole-body motor control"),
+    ]
+    x0, gap, bw = 82, 20, 335
+    for i, (letter, title, sub, desc) in enumerate(cards):
+        x = x0 + i * (bw + gap)
+        color = BLUE if i % 2 == 0 else ORANGE
+        d.rounded_rectangle((x, 280, x + bw, 870), radius=20, fill=WHITE + (246,), outline=INK + (255,), width=3)
+        d.rectangle((x, 280, x + bw, 420), fill=color + (248,))
+        tx(d, (x + bw//2, 325), letter, 52, fill=(INK if color == ORANGE else WHITE), bold=True, narrow=True, anchor="mm")
+        tx(d, (x + bw//2, 385), title, 22, fill=(INK if color == ORANGE else WHITE), bold=True, narrow=True, anchor="mm")
+        
+        tx(d, (x + bw//2, 465), sub, 19, fill=(BLUE if color == ORANGE else ORANGE), bold=True, anchor="mm")
+        d.line((x + 35, 505, x + bw - 35, 505), fill=ORANGE + (255,), width=4)
+        
+        wrapper = textwrap.TextWrapper(width=18)
+        lines = wrapper.wrap(desc)
+        wrapped_text = "\n".join(lines)
+        tx(d, (x + bw//2, 545), wrapped_text, 19, fill=INK, bold=True, anchor="ma", spacing=8)
+
+    d.rectangle((240, 915, 1680, 1005), fill=INK + (248,))
+    tx(d, (960, 960), "CONTACT  ·  LIGHTING  ·  INTER-COMMS  ·  MECHANICAL  ·  BALANCE", 27, fill=WHITE, bold=True, anchor="mm")
+    im.save(OUT / "simple_open_challenges.png")
+
+
 def overlay(name,title,subtitle,metric,accent=ORANGE):
     im=Image.new("RGBA",(W,H),(0,0,0,0)); d=ImageDraw.Draw(im,"RGBA")
     d.rectangle((48,820,925,895),fill=accent+(245,))
@@ -554,7 +662,7 @@ def montage_overlay():
     im.save(OUT/"overlay_montage.png")
 
 
-save_title(); save_diagram(); save_ppo_training(); save_mappo_training(); save_evidence(); save_livekit_voice(); save_outro(); save_pitch_problem(); save_pitch_skills(); save_simple_problem(); save_simple_ppo(); save_simple_mappo(); save_simple_livekit(); save_simple_evidence(); montage_overlay(); voice_demo_overlays()
+save_title(); save_diagram(); save_ppo_training(); save_mappo_training(); save_evidence(); save_livekit_voice(); save_outro(); save_pitch_problem(); save_pitch_skills(); save_simple_problem(); save_simple_ppo(); save_simple_mappo(); save_simple_livekit(); save_simple_evidence(); save_open_challenges(); save_simple_open_challenges(); montage_overlay(); voice_demo_overlays()
 overlay("self","01  ICE-AXE SELF-ARREST","Stop an uncontrolled fall before the robot leaves the route","9/9 + 60/60",BLUE)
 overlay("fixed","02  FALL RECOVERY ON ICE","Load the line, recover to standing, continue uphill","recover + continue",ORANGE)
 overlay("getup","02B  AUTONOMOUS GET-UP","Learned whole-body recovery returns G1 to a stable stand","29-DoF · 50 Hz",BLUE)

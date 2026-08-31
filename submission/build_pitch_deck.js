@@ -8,6 +8,7 @@ const detailedSlides = [
   "mappo_training.png",
   "livekit_voice.png",
   "evidence.png",
+  "open_challenges.png",
 ];
 
 const simpleSlides = [
@@ -16,25 +17,26 @@ const simpleSlides = [
   "simple_ppo.png",
   "simple_mappo.png",
   "simple_livekit.png",
-  "simple_evidence.png",
+  "simple_open_challenges.png",
 ];
 
 const detailedNotes = [
   "0:00–0:15 — Mountains punish small failures. A slip becomes a fall; storm debris blocks the route. The G1 we bring to the Himalayas needs skills that use alpine tools, recover, and know when to stop.",
   "0:15–0:30 — Optimus Prime built four skills: ice-axe self-arrest, fixed-line recovery, controlled rappel, and coordinated lifting that shares a long load.",
-  "0:30–0:47 — The single-robot skills use MuJoCo PPO. Self-arrest maps 125 measurements through two 256-unit layers to 14 arm residuals at 100 hertz. Rewards require real pick contact, load, blade angle, grip, and body pose. The curriculum expands from gentle slides to five meters per second with cross-slope and adversarial falls.",
-  "0:47–1:04 — In Isaac Lab, one shared MAPPO actor embeds 98 local features and seven-value teammate tokens with four-head attention. It outputs ten commands per G1 while frozen AGILE controls the legs. A central critic trains a team reward for tracking, levelness, load balance, and staying upright; the curriculum adds transport, turning, and heavier mass.",
+  "0:30–0:47 — Single-robot skills are simulated in MuJoCo. Self-arrest maps 125 measurements to 14 arm residuals at 100 hertz using PPO. Physical reward shaping requires real pick contact, blade angle, grip, and body pose. Progressive curriculum learning expands from gentle slides to 5 m/s cross-slope and adversarial falls.",
+  "0:47–1:04 — In Isaac Sim and Isaac Lab, one shared MAPPO actor embeds 98 local features and 7-value teammate tokens with 4-head attention. A centralized critic trains a shaped team reward for tracking, levelness, load balance, and upright stance across a multi-stage curriculum from lifting to carrying and turning.",
   "1:04–1:17 — At inference, LiveKit carries state and voice. One uplink per robot feeds every actor. The agent answers telemetry questions and turns ‘move the log’ into a confirmed, gated start intent. Local policies still control motion.",
   "1:17–1:30 — Frozen tests arrested nine of nine named and sixty of sixty randomized falls. Rappel descended two meters; the lift split load evenly. Now, the demo.",
+  "1:30–1:45 — Open challenges & sim-to-real roadmap: the C.L.I.M.B. framework addresses contact dynamics on snow/ice, lighting/sensor breakdown, ad-hoc inter-robot mesh comms without cloud, dynamic mechanical tethers, and balance without simulation stabilizer crutches.",
 ];
 
 const simpleNotes = [
   "0:00–0:15 — The mountain amplifies small errors. Our goal is simple: when G1 slips, reaches a cliff, or finds a blocked route, it can recover or keep moving without sending a person into danger.",
   "0:15–0:30 — We built four skills: stop a slide, recover on a fixed line, descend under control, and move a load that one robot cannot.",
-  "0:30–0:45 — For single-robot skills, 125 observation features enter a compact PPO policy and become arm commands. Training starts with easy falls and expands to fast, cross-slope cases. Success only counts when the axe physically bites.",
-  "0:45–1:00 — For lifting, every G1 runs the same MAPPO actor. It combines local state with teammate tokens and outputs ten high-level commands. We teach lift first, then carry, turn, and heavier loads.",
+  "0:30–0:45 — In MuJoCo, 125 observation features enter a compact PPO policy for single-robot skills. Physical reward shaping enforces true pick contact and blade angle, while curriculum learning progresses from easy slides to fast cross-slope falls.",
+  "0:45–1:00 — In Isaac Sim, every G1 runs the same MAPPO actor trained with centralized team reward shaping for load balance and levelness. A multi-agent curriculum teaches lift first, then carry, turn, and heavier loads.",
   "1:00–1:15 — LiveKit is the field bus. Each robot publishes one state stream. Voice can ask for load or issue ‘move the log’; confirmation gates the mission, while local policies control joints.",
-  "1:15–1:30 — Frozen tests: sixty-nine of sixty-nine arrests, recovery to standing on an icy fixed line, a two-meter rappel, and a fifty-fifty target load split. Now, the demo.",
+  "1:15–1:30 — The C.L.I.M.B. roadmap captures the open sim-to-real challenges: contact dynamics on snow, harsh lighting & whiteouts, offline inter-robot comms, rope mechanics, and unassisted balance.",
 ];
 
 function newDeck(title) {
@@ -88,30 +90,40 @@ async function writeDeck(fileName, title, slides, notes) {
 async function main() {
   await writeDeck(
     "optimus_prime_pitch_90s.pptx",
-    "G1 Expedition — simplified 90-second pitch",
+    "Optimus Prime - Expedition Skills for Humanoid Mountaineering (Simplified 90s)",
     simpleSlides,
     simpleNotes,
   );
 
   await writeDeck(
     "optimus_prime_pitch_90s_detailed.pptx",
-    "G1 Expedition — detailed 90-second pitch",
+    "Optimus Prime - Expedition Skills for Humanoid Mountaineering (Detailed)",
     detailedSlides,
     detailedNotes,
   );
 
+  const optionPairs = [
+    { detailed: "pitch_problem.png", simple: "simple_problem.png", dNote: detailedNotes[0], sNote: simpleNotes[0] },
+    { detailed: "pitch_skills.png", simple: "pitch_skills.png", dNote: detailedNotes[1], sNote: simpleNotes[1] },
+    { detailed: "ppo_training.png", simple: "simple_ppo.png", dNote: detailedNotes[2], sNote: simpleNotes[2] },
+    { detailed: "mappo_training.png", simple: "simple_mappo.png", dNote: detailedNotes[3], sNote: simpleNotes[3] },
+    { detailed: "livekit_voice.png", simple: "simple_livekit.png", dNote: detailedNotes[4], sNote: simpleNotes[4] },
+    { detailed: "evidence.png", simple: "simple_evidence.png", dNote: detailedNotes[5], sNote: "Frozen tests: sixty-nine of sixty-nine arrests, recovery on an icy fixed line, a two-meter rappel, and a fifty-fifty target load split." },
+    { detailed: "open_challenges.png", simple: "simple_open_challenges.png", dNote: detailedNotes[6], sNote: simpleNotes[5] },
+  ];
+
   const optionSlides = [];
   const optionNotes = [];
-  for (let index = 0; index < detailedSlides.length; index += 1) {
-    optionSlides.push(detailedSlides[index], simpleSlides[index]);
+  for (const pair of optionPairs) {
+    optionSlides.push(pair.detailed, pair.simple);
     optionNotes.push(
-      `DETAILED OPTION — ${detailedNotes[index]}`,
-      `SIMPLIFIED OPTION — ${simpleNotes[index]}`,
+      `DETAILED OPTION — ${pair.dNote}`,
+      `SIMPLIFIED OPTION — ${pair.sNote}`,
     );
   }
   await writeDeck(
     "optimus_prime_pitch_slide_options.pptx",
-    "G1 Expedition — detailed and simplified slide options",
+    "Optimus Prime - Expedition Skills for Humanoid Mountaineering (Slide Options)",
     optionSlides,
     optionNotes,
   );
